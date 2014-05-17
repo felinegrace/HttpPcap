@@ -22,7 +22,7 @@ namespace Amber.Kit.HttpPcap.HttpBusiness
         //End IP Header fields
         
         private byte      byHeaderLength;             //Header length
-        private byte[]    byIPData = new byte[4096];  //Data carried by the datagram
+        private byte[] byIPData;                      //Data carried by the datagram
 
 
         public IPHeader(byte[] byBuffer, int nReceived)

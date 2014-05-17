@@ -21,7 +21,7 @@ namespace Amber.Kit.HttpPcap.HttpBusiness
 
         private byte   byHeaderLength;            //Header length
 
-        private byte[] byTCPData = new byte[4096];//Data carried by the TCP packet
+        private byte[] byTCPData;//Data carried by the TCP packet
        
         public TCPHeader(byte [] byBuffer, int nReceived)
         {
@@ -49,6 +49,13 @@ namespace Amber.Kit.HttpPcap.HttpBusiness
                 byHeaderLength = (byte)(usDataOffsetAndFlags >> 12);
                 byHeaderLength *= 4;
 
+                //Copy the data carried by the data gram into another array so that
+                //according to the protocol being carried in the IP datagram
+                byTCPData = new byte[nReceived - byHeaderLength];
+                Array.Copy(byBuffer,
+                           byHeaderLength,  //start copying from the end of the header
+                           byTCPData, 0,
+                           byTCPData.Length);
             }
             catch (Exception ex)
             {
@@ -146,7 +153,13 @@ namespace Amber.Kit.HttpPcap.HttpBusiness
                 return string.Format("0x{0:x2}", sChecksum);
             }
         }
-
+        public byte[] Data
+        {
+            get
+            {
+                return byTCPData;
+            }
+        }
       
     }
 }

@@ -63,7 +63,10 @@
     <Compile Include="Entry.cs" />
     <Compile Include="HttpBusiness\HttpBusinessPoller.cs" />
     <Compile Include="HttpBusiness\HttpPacketParser.cs" />
-    <Compile Include="HttpBusiness\HttpRoleParse.cs" />
+    <Compile Include="HttpBusiness\HttpRequestHeader.cs" />
+    <Compile Include="HttpBusiness\HttpResponseHeader.cs" />
+    <Compile Include="HttpBusiness\HttpTransaction.cs" />
+    <Compile Include="HttpBusiness\HttpTransactionMatcher.cs" />
     <Compile Include="HttpBusiness\IPHeader.cs" />
     <Compile Include="HttpSession.cs" />
     <Compile Include="PkFunction.cs" />

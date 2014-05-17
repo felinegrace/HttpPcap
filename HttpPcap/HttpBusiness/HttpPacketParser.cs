@@ -47,5 +47,17 @@ namespace Amber.Kit.HttpPcap.HttpBusiness
                 return tcpHeader.Flags == 0x10;
             }
         }
+
+        public HttpRequestHeader parsePayloadAsHttpRequest()
+        {
+            HttpRequestHeader httpRequestHeader = new HttpRequestHeader(tcpHeader.Data);
+            return httpRequestHeader;
+        }
+
+        public HttpResponseHeader parsePayloadAsHttpResponse()
+        {
+            HttpResponseHeader httpResponseHeader = new HttpResponseHeader(tcpHeader.Data);
+            return httpResponseHeader;
+        }
     }
 }

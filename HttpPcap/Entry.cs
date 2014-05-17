@@ -55,11 +55,6 @@ namespace Amber.Kit.HttpPcap
             Logger.debug("message = {0}", msg);
         }
 
-        private void debugmsg(string msg)
-        {
-            Logger.debug("debug = {0}", msg);
-
-        }
         private void UpdateRecPacket(httpsession osession)
         {
             Logger.debug("\n>>>req = {0}", System.Text.Encoding.UTF8.GetString(osession.sendraw.ToArray()));
@@ -275,7 +270,9 @@ namespace Amber.Kit.HttpPcap
                         main_pcap.Start();
                     }
                     httpbusiness = new HttpBusinessPoller();
-                    httpbusiness.Myrecvie = this.UpdateRecPacket;
+                    httpbusiness.onRequest = this.onReq;
+                    httpbusiness.onResponse = this.onResp;
+                    httpbusiness.onTransaction = this.onTransaction;
                     httpbusiness.start();
                 }
                 else
@@ -296,7 +293,26 @@ namespace Amber.Kit.HttpPcap
 
         }
 
+        private void onReq(byte[] req)
+        {
+            Logger.debug("\n^^^req = {0}", System.Text.Encoding.UTF8.GetString(req));
 
+        }
+
+        private void onResp(byte[] resp)
+        {
+            Logger.debug("\n&&&rsp = {0}", System.Text.Encoding.UTF8.GetString(resp));
+            
+
+        }
+
+        private void onTransaction(byte[] req, byte[] resp)
+        {
+            Logger.debug("\n>>>req = {0}", System.Text.Encoding.UTF8.GetString(req));
+
+            Logger.debug("\n>>>rsp = {0}", System.Text.Encoding.UTF8.GetString(resp));
+            
+        }
 
         private bool isimage(string head)
         {
