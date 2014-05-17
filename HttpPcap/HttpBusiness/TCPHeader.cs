@@ -3,7 +3,7 @@ using System.Text;
 using System;
 using System.IO;
 
-namespace Amber.Kit.HttpPcap
+namespace Amber.Kit.HttpPcap.HttpBusiness
 {
     public class TCPHeader
     {

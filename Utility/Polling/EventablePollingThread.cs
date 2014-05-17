@@ -27,9 +27,9 @@ namespace Cabinet.Utility
 
         protected sealed override void onPolling()
         {
-            Logger.debug("EventablePollingThread: waiting for signal...");
+            //Logger.debug("EventablePollingThread: waiting for signal...");
             notifyEvent.WaitOne(-1);
-            Logger.debug("EventablePollingThread: received signal, peeking...");
+            //Logger.debug("EventablePollingThread: received signal, peeking...");
             onEventablePoll();
         }
 

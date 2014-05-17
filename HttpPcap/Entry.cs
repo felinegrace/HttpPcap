@@ -11,6 +11,7 @@ using System.Text.RegularExpressions;
 using System.Net;
 using Amber.Kit.HttpPcap.WinPcap;
 using Amber.Kit.HttpPcap.CommonObject;
+using Amber.Kit.HttpPcap.HttpBusiness;
 
 namespace Amber.Kit.HttpPcap
 {
@@ -18,8 +19,8 @@ namespace Amber.Kit.HttpPcap
 
     public class Entry
     {
-        int rid;
-        long pktcount;
+        
+        HttpBusinessPoller httpbusiness;
         private delegate void RecApacket(httpsession osession);
         private delegate void updatemsg(string msg);
         private updatemsg myupdatemsg;
@@ -40,9 +41,6 @@ namespace Amber.Kit.HttpPcap
         private long totalcount = 0;
 
 
-
-        private Dictionary<string, List<byte>> dic_senddata = new Dictionary<string, List<byte>>();
-        private Dictionary<string, httpsession> dic_ack_httpsession = new Dictionary<string, httpsession>();
 
        
         #region 更新UI
@@ -142,12 +140,12 @@ namespace Amber.Kit.HttpPcap
             int desport = PkFunction.Get2Bytes(s, ref offset, 0);
 
             bool isok = false;
-            if (iswhiteport(desport))
+            if (CommonConfig.iswhiteport(desport))
             {
                 isok = true;
                 if (s[47] == 0x18) qpscount++;
             }
-            else if (iswhiteport(srcport))
+            else if (CommonConfig.iswhiteport(srcport))
             {
 
                 isok = true;
@@ -158,127 +156,13 @@ namespace Amber.Kit.HttpPcap
 
             byte[] t = new byte[p.caplen - 14];
             Array.Copy(s, 14, t, 0, t.Length);
-            pktcache.Enqueue(t);
+
+
+            httpbusiness.postRequest(new DescriptorReference(t, t.Length));
         }
 
 
 
-        private void ParcePkt_Cache(byte[] byteData, int nReceived)
-        {
-
-
-            IPHeader ipHeader = new IPHeader(byteData, nReceived);
-
-
-            switch (ipHeader.ProtocolType)
-            {
-                case Protocol.TCP:
-                    TCPHeader tcpHeader = new TCPHeader(ipHeader.Data, ipHeader.MessageLength);//Length of the data field          
-                    int headlen = ipHeader.HeaderLength + tcpHeader.HeaderLength;
-
-                    if (iswhiteport(tcpHeader.DestinationPort))
-                    {
-                        pktcount++;
-                        if (headlen >= nReceived) return;
-                        if (tcpHeader.Flags == 0x18)
-                            BuildPacket(true, tcpHeader.AcknowledgementNumber, tcpHeader.SequenceNumber, byteData, headlen, nReceived);
-                        else if (tcpHeader.Flags == 0x10)
-                        {
-                            byte[] dataArray = new byte[nReceived - headlen];
-                            Array.Copy(byteData, headlen, dataArray, 0, dataArray.Length);
-
-                            if (dic_senddata.ContainsKey(tcpHeader.AcknowledgementNumber))
-                                dic_senddata[tcpHeader.AcknowledgementNumber].AddRange(dataArray);
-                            else
-                            {
-                                List<byte> listtmp = new List<byte>();
-                                listtmp.AddRange(dataArray);
-                                dic_senddata.Add(tcpHeader.AcknowledgementNumber, listtmp);
-
-                            }
-                        }
-                    }
-                    else if (iswhiteport(tcpHeader.SourcePort))
-                    {
-                        pktcount++;
-                        if (headlen >= nReceived) return;
-                        BuildPacket(false, tcpHeader.AcknowledgementNumber, tcpHeader.SequenceNumber, byteData, headlen, nReceived);
-
-                    }
-                    break;
-
-
-
-
-            }
-
-
-        }
-
-
-
-
-
-        private void OnReceive(IAsyncResult ar)
-        {
-            try
-            {
-                int nReceived = mainSocket.EndReceive(ar);
-
-                byte[] byteData = ar.AsyncState as byte[];
-                //Analyze the bytes received...
-
-                ParcePkt_Cache(byteData, nReceived);
-                byteData = new byte[4096];
-                if (bContinueCapturing)
-                {
-                    //    Thread.Sleep(1);
-                    byteData = new byte[4096];
-
-                    //Another call to BeginReceive so that we continue to receive the incoming
-                    //packets
-                    mainSocket.BeginReceive(byteData, 0, byteData.Length, SocketFlags.None,
-                        new AsyncCallback(OnReceive), byteData);
-                }
-            }
-
-            catch (Exception ex)
-            {
-                Logger.error(ex.Message);
-            }
-        }
-
-
-        private bool iswhiteport(int port)
-        {
-
-            for (int i = 0; i < ports.Length; i++)
-            {
-                if (port == ports[i])
-                    return true;
-            }
-            return false;
-        }
-
-        private void ParserCacheThread()
-        {
-            while (bContinueCapturing)
-            {
-                while (pktcache.Count > 0)
-                {
-
-                    byte[] t = pktcache.Dequeue();
-                    ParcePkt_Cache(t, t.Length);
-                    //Application.DoEvents();
-                    //   Thread.Sleep(10);
-
-                }
-
-                System.Threading.Thread.Sleep(1000);
-
-            }
-        }
-        private Queue<byte[]> pktcache = new Queue<byte[]>();
 
         byte[] byteData = new byte[4096];
         private void MonitorData_raw()//监控线程
@@ -302,13 +186,13 @@ namespace Amber.Kit.HttpPcap
                 int desport = PkFunction.Get2Bytes(buf, ref offset, 0);
 
                 bool isok = false;
-                if (iswhiteport(desport))
+                if (CommonConfig.iswhiteport(desport))
                 {
                    
                     isok = true;
                     if (buf[33] == 0x18) qpscount++;
                 }
-                else if (iswhiteport(srcport))
+                else if (CommonConfig.iswhiteport(srcport))
                 {
                  
                     isok = true;
@@ -318,7 +202,7 @@ namespace Amber.Kit.HttpPcap
                 byte[] t = new byte[size];
                 Array.Copy(buf, 0, t, 0, t.Length);
 
-                pktcache.Enqueue(t);
+                httpbusiness.postRequest(new DescriptorReference(t, t.Length));
 
             }
 
@@ -327,17 +211,9 @@ namespace Amber.Kit.HttpPcap
         }
 
         string localip = string.Empty;
-        int[] ports;
-        //IPAddress ipwhite = null;
+        
+        
 
-        Regex rhost = new Regex(@"\bhost:.(\S*)", RegexOptions.IgnoreCase);
-        private string Gethost(string http)
-        {
-
-            Match m = rhost.Match(http);
-            return m.Groups[1].Value;
-
-        }
         System.IO.StreamWriter sw = System.IO.File.AppendText(System.DateTime.Now.ToString("yyyyMMdd_") + "log.txt");
         private void log(string msg)
         {
@@ -345,154 +221,11 @@ namespace Amber.Kit.HttpPcap
             sw.WriteLine(System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss\t") + msg);
             sw.Flush();
         }
-        private Dictionary<string, string> dic_ack_seq = new Dictionary<string, string>();
-
-        private List<string> list_ack = new List<string>();
-
-        /// <summary>
-        /// 组包
-        /// </summary>
-        /// <param name="isout"></param>
-        /// <param name="ack"></param>
-        /// <param name="seq"></param>
-        /// <param name="PacketData"></param>
-        /// <param name="start"></param>
-        /// <param name="reclen"></param>
-        /// 
-        private void BuildPacket(bool isout, string ack, string seq, byte[] PacketData, int start, int reclen)
-        {
-
-            try
-            {
-
-
-                
-                
-
-                if (reclen <= start) return;
-                byte[] dataArray = new byte[reclen - start];
-                Array.Copy(PacketData, start, dataArray, 0, dataArray.Length);
-                if (isout)//如果是请求包
-                {
-
-
-                    httpsession osesion = new httpsession();
-                    osesion.id = rid;
-                    osesion.senddtime = DateTime.Now;
-                    osesion.ack = ack;
-                    if (dic_senddata.ContainsKey(ack))
-                    {
-                        osesion.sendraw = dic_senddata[ack];
-                    }
-                    else
-                    {
-                        osesion.sendraw = new List<byte>();
-                    }
-
-                    osesion.sendraw.AddRange(dataArray);
-
-
-                    string http_str = System.Text.Encoding.ASCII.GetString(osesion.sendraw.ToArray());
-                    string host = Gethost(http_str);
-
-                    if (filtedomain == "" || host.IndexOf(filtedomain) >= 0)
-                    {
-
-
-                        ////  this.dataGridView1.Rows.Add(vr.rid, vr.seq, vr.method, vr.url,http_str);
-                        //else
-                        int fltag = http_str.IndexOf("\r\n");
-                        if (fltag > 0)
-                        {
-                            string fline = http_str.Substring(0, fltag);
-                            int fblacktag = fline.IndexOf(" ");
-                            if (fblacktag > 0)
-                            {
-                                osesion.method = fline.Substring(0, fline.IndexOf(" "));
-                                int urllen = fline.LastIndexOf(" ") - fblacktag - 1;
-                                if (urllen > 0)
-                                    osesion.url = String.Format("http://{0}{1}", host, fline.Substring(fblacktag + 1, urllen));
-                            }
-                        }
-                        if (!this.dic_ack_httpsession.ContainsKey(osesion.ack))
-                        {
-                            this.dic_ack_httpsession.Add(osesion.ack, osesion);
-                            //     this.dic_rid_ack.Add(osesion.id, ack);
-                            this.list_ack.Add(ack);
-                        }
-                        rid++;
-                        Myrecvie( osesion );
-                         
-                        debugmsg(string.Format("[{0}]  创建 {1}", seq, osesion.url));
-                        //    }                     
-
-                    }
-
-                }
-                else//如果是返回数据包
-                {
-
-                    if (dic_ack_httpsession.ContainsKey(seq))//如果第一次匹配
-                    {
-                        //    log(ack + ":" + seq + " 第一次返回匹配，添加映射");
-                        debugmsg(string.Format("[{0}]  开始接受 {1}：{2}", seq, ack, seq));
-                        httpsession osession = dic_ack_httpsession[seq];
-                        if (osession.responseraw == null) osession.responseraw = new List<byte>();
-                        osession.responseraw.AddRange(dataArray);
-                        osession.responoversetime = DateTime.Now;
-
-                        string headb = System.Text.Encoding.ASCII.GetString(dataArray);
-                        int flinetag = headb.IndexOf("\r\n");
-                        if (flinetag > 0)
-                        {
-                            headb = headb.Substring(0, flinetag);
-                            string[] p3 = headb.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
-                            if (p3.Length >= 2)
-                            {
-                                osession.statucode = int.Parse(p3[1]);
-
-                                myupdatestatehandle( 
-                                osession.id, osession.statucode, (osession.responoversetime - osession.senddtime).TotalMilliseconds);
-
-                                log(osession.method + "\t" + osession.url +"\t"+osession.statucode); ;
-                            }
-                        }
-                        dic_ack_httpsession[seq] = osession;
-                        if (!dic_ack_seq.ContainsKey(ack))
-                        {
-                            dic_ack_seq.Add(ack, seq);
-                        }
-                        //    if (osession.id<=40)
-
-                    }//后面的数据包
-                    else
-                    {
-                        if (dic_ack_seq.ContainsKey(ack))
-                        {
-
-                            httpsession osession = dic_ack_httpsession[dic_ack_seq[ack]];
-
-                            osession.responseraw.AddRange(dataArray);
-                            dic_ack_httpsession[dic_ack_seq[ack]] = osession;
-                            debugmsg(string.Format("[{0}]  继续接受 {1}：{2}  总长度 {3} ", dic_ack_seq[ack], ack, seq, osession.responseraw.Count));
-                        }
-                        else
-                        {
-                            debugmsg(string.Format("[未识别]  接受 {1}：{2}", 0, ack, seq));
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                debugmsg(string.Format("[异常]  {0}", ex.ToString()));
-                log(ex.ToString());
-            }
-        }
+  
 
 
 
-        string filtedomain;
+        
         Thread main_raw;
         Thread main_pcap;
         public void button1_Click(bool isStart, string domain, string port, string localaddress)
@@ -500,20 +233,18 @@ namespace Amber.Kit.HttpPcap
 
             try
             {
-                filtedomain = domain;
-                rid = 0;
-                pktcount = 0;
+                CommonConfig.filtedomain = domain;
+                
+                
 
                 if (isStart)
                 {
 
-                    dic_ack_seq.Clear();
-                    dic_ack_httpsession.Clear();
                     string[] portstring = port.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
-                    ports = new int[portstring.Length];
+                    CommonConfig.ports = new int[portstring.Length];
                     for (int i = 0; i < portstring.Length; i++)
                     {
-                        ports[i] = Convert.ToInt32(portstring[i]);
+                        CommonConfig.ports[i] = Convert.ToInt32(portstring[i]);
                     }
 
                     if (!CommonConfig.isusepcap)
@@ -539,15 +270,15 @@ namespace Amber.Kit.HttpPcap
                         main_pcap.Priority = ThreadPriority.Highest;
                         main_pcap.Start();
                     }
-
-                    Thread ppcthread = new Thread(new ThreadStart(ParserCacheThread));
-                    ppcthread.IsBackground = true;
-                    ppcthread.Start();
+                    httpbusiness = new HttpBusinessPoller();
+                    httpbusiness.Myrecvie = this.UpdateRecPacket;
+                    httpbusiness.start();
                 }
                 else
                 {
 
                     if (poller != null) poller.stop();
+                    if (httpbusiness != null) httpbusiness.stop();
                     bContinueCapturing = false;
                     Thread.Sleep(1100);
 

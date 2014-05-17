@@ -61,12 +61,14 @@
     <Compile Include="CommonObject\CommonConfig.cs" />
     <Compile Include="CommonObject\PcapException.cs" />
     <Compile Include="Entry.cs" />
+    <Compile Include="HttpBusiness\HttpBusinessPoller.cs" />
+    <Compile Include="HttpBusiness\HttpPacketParser.cs" />
+    <Compile Include="HttpBusiness\IPHeader.cs" />
     <Compile Include="HttpSession.cs" />
-    <Compile Include="IPHeader.cs" />
     <Compile Include="PkFunction.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RawCapture.cs" />
-    <Compile Include="TCPHeader.cs" />
+    <Compile Include="HttpBusiness\TCPHeader.cs" />
     <Compile Include="WinPcap\PcapNetworkInterface.cs" />
     <Compile Include="WinPcap\PcapApiWrapper.cs" />
     <Compile Include="WinPcap\PcapNetworkInterfacePool.cs" />

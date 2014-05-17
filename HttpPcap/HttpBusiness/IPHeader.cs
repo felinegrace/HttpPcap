@@ -3,7 +3,7 @@ using System.Text;
 using System;
 using System.IO;
 
-namespace Amber.Kit.HttpPcap
+namespace Amber.Kit.HttpPcap.HttpBusiness
 {
     public class IPHeader
     {
@@ -189,7 +189,13 @@ namespace Amber.Kit.HttpPcap
             }
         }
 
-        public Amber.Kit.HttpPcap.Protocol ProtocolType
+        public enum Protocol
+        {
+            Tcp,
+            Udp,
+            Unknown
+        }
+        public Protocol ProtocolType
         {
             get
             {
@@ -197,15 +203,15 @@ namespace Amber.Kit.HttpPcap
                 //of the datagram
                 if (byProtocol == 6)        //A value of six represents the TCP protocol
                 {
-                    return Amber.Kit.HttpPcap.Protocol.TCP;
+                    return Protocol.Tcp;
                 }
                 else if (byProtocol == 17)  //Seventeen for UDP
                 {
-                    return Amber.Kit.HttpPcap.Protocol.UDP;
+                    return Protocol.Udp;
                 }
                 else
                 {
-                    return Amber.Kit.HttpPcap.Protocol.Unknown;
+                    return Protocol.Unknown;
                 }
             }
         }
