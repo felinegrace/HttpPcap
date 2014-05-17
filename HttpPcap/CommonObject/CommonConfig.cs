@@ -22,5 +22,38 @@ namespace Amber.Kit.HttpPcap.CommonObject
             }
             return false;
         }
+
+        public static int[] serverPorts;
+        public static int[] clientPorts;
+
+        public static bool isRequest(int sourcePort, int destPort)
+        {
+            bool isClient = false;
+            bool isServer = false;
+            if (clientPorts.Length == 0)
+                isClient = true;
+            if (clientPorts.Contains<int>(sourcePort))
+                isClient = true;
+            if (serverPorts.Length == 0)
+                isServer = true;
+            if (serverPorts.Contains<int>(destPort))
+                isServer = true;
+            return isClient && isServer;
+        }
+
+        public static bool isResponse(int sourcePort, int destPort)
+        {
+            bool isClient = false;
+            bool isServer = false;
+            if (clientPorts.Length == 0)
+                isClient = true;
+            if (clientPorts.Contains<int>(destPort))
+                isClient = true;
+            if (serverPorts.Length == 0)
+                isServer = true;
+            if (serverPorts.Contains<int>(sourcePort))
+                isServer = true;
+            return isClient && isServer;
+        }
     }
 }

@@ -62,9 +62,11 @@ namespace Amber.Kit.HttpPcap
         }
         private void UpdateRecPacket(httpsession osession)
         {
-            Logger.debug("packet {0},{1},{2},{3},{4},{5}",
-                osession.id, osession.ack, osession.method, 
-                osession.url, Encoding.ASCII.GetString(osession.sendraw.ToArray()), osession.statucode);
+            Logger.debug("\n>>>req = {0}", System.Text.Encoding.UTF8.GetString(osession.sendraw.ToArray()));
+            if (osession.responseraw != null)
+            {
+                Logger.debug("\n>>>rsp = {0}", System.Text.Encoding.UTF8.GetString(osession.responseraw.ToArray()));
+            }
         }
 
         List<PcapNetworkInterface> devlist { get; set; }
@@ -230,7 +232,9 @@ namespace Amber.Kit.HttpPcap
         Thread main_pcap;
         public void button1_Click(bool isStart, string domain, string port, string localaddress)
         {
-
+            CommonConfig.serverPorts = new int[1];
+            CommonConfig.serverPorts[0] = 80;
+            CommonConfig.clientPorts = new int[0];
             try
             {
                 CommonConfig.filtedomain = domain;

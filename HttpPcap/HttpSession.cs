@@ -17,6 +17,11 @@ namespace Amber.Kit.HttpPcap
         public List<byte> sendraw;
         public List<byte> responseraw;
         public int statucode;
+
+        public uint acknum;
+        public uint seqnum;
+
+        public StringBuilder builder;
     }
 
 }
