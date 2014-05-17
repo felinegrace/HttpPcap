@@ -45,6 +45,7 @@ namespace Cabinet.Utility
             catch (System.Exception ex)
             {
                 stop();
+                Logger.error(ex.Message);
                 if (onError != null)
                     onError(ex.Message);
             }

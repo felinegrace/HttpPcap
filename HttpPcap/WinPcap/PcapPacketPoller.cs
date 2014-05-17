@@ -5,20 +5,15 @@ using System.Runtime.InteropServices;
 using System.Text;
 using Cabinet.Utility;
 using Amber.Kit.HttpPcap.CommonObject;
+using Amber.Kit.HttpPcap.Common;
 
 
 namespace Amber.Kit.HttpPcap.WinPcap
 {
-    public class PcapPacketPoller : PollingThread
+    public class PcapPacketPoller : PacketPollerBase
     {
         private IntPtr pcapHandle { get; set; }
-        public string networkInterfaceName { get; set; }
-        private PcapPacketHeader packetHeader { get; set; }
-        private byte[] packetBuffer { get; set; }
-        public Action<PcapPacketHeader, byte[]> onPacket { get; set; }
 
-
-        private const int maxiumBytesStoredOfEachPacket = 256 * 256;
         private const int waitMillisecondsForReadingAfterPacketArrived = 0;
         private const int PCAP_OPENFLAG_PROMISCUOUS = 1;
         private const int PCAP_OPENFLAG_DATATX_UDP = 2;
@@ -26,12 +21,10 @@ namespace Amber.Kit.HttpPcap.WinPcap
         private const int PCAP_OPENFLAG_NOCAPTURE_LOCAL = 8;
         private const int PCAP_OPENFLAG_MAX_RESPONSIVENESS = 16;
         private const int internalCopyThreshold = 128;
-        public PcapPacketPoller(Action<PcapPacketHeader, byte[]> onPacket)
+        public PcapPacketPoller(string ipAddress, Action<Descriptor> onPacket) 
+            : base(ipAddress, onPacket)
         {
             pcapHandle = IntPtr.Zero;
-            this.onPacket = onPacket;
-            packetHeader = new PcapPacketHeader();
-            packetBuffer = new byte[maxiumBytesStoredOfEachPacket];
         }
 
         private bool nextPacket()
@@ -45,16 +38,20 @@ namespace Amber.Kit.HttpPcap.WinPcap
 
                 case 1:
                     {
-                        LlsPcapPacketHeader llsPacketHeader =
-                            PcapApiWrapper.toLowLevelStruct<LlsPcapPacketHeader>(llsPacketHeaderPtr);
-                        packetHeader.internalTimeStamp = llsPacketHeader.ts;
-                        packetHeader.caplen = (int)llsPacketHeader.caplen;
-                        packetHeader.len = (int)llsPacketHeader.len;
-                                                    
+                        PcapStructWrapper.LlsPcapPacketHeader llsPacketHeader =
+                            PcapApiWrapper.toLowLevelStruct<PcapStructWrapper.LlsPcapPacketHeader>(llsPacketHeaderPtr);
                         //warning:  part of packet causes caplen < len would not be captured 
                         //          (packet actual length > maxiumBytesStoredOfEachPacket)
-                        Marshal.Copy(llPacketBufferPtr, packetBuffer, 0, packetHeader.caplen);
-                        return true;
+                        EthernetHeader ethernetHeader = new EthernetHeader(llPacketBufferPtr, llsPacketHeader.caplen);
+                        if (ethernetHeader.isIP())
+                        {
+                            descriptor = new DescriptorReference(ethernetHeader.ethernetData, ethernetHeader.ethernetData.Length);
+                            return true;
+                        }
+                        else
+                        {
+                            return false;
+                        }
                     }
 
                 case -1:
@@ -76,16 +73,20 @@ namespace Amber.Kit.HttpPcap.WinPcap
             {
                 if (onPacket != null)
                 {
-                    onPacket(packetHeader, packetBuffer);
+                    onPacket(descriptor);
                 }
             }
         }
 
         protected override void onStart()
-        {   
-            if(networkInterfaceName == null)
+        {
+            PcapNetworkInterfacePool pcapNetworkInterfacePool = new PcapNetworkInterfacePool();
+            pcapNetworkInterfacePool.findAllInterfaces();
+            string networkInterfaceName = pcapNetworkInterfacePool.getNetworkInterfaceNameByIpAddress(ipAddress);
+
+            if (networkInterfaceName == null)
             {
-                throw new PcapException("no interface set.");
+                throw new PcapException("cannot find network interface.");
             }
             StringBuilder errBuffer = new StringBuilder();
             pcapHandle = PcapApiWrapper.pcap_open(

@@ -6,41 +6,11 @@ using System.Text;
 
 namespace Amber.Kit.HttpPcap.WinPcap
 {
-    /// <summary>
-    /// struct timeval
-    /// </summary>
-    [StructLayout(LayoutKind.Sequential)]
-    public struct LlsTimeVal
-    {
-        public uint tv_sec;
-        public uint tv_usec;
-    }
-
-    /// <summary>
-    /// struct pcap_pkthdr 
-    /// </summary>
-    [StructLayout(LayoutKind.Sequential)]
-    public struct LlsPcapPacketHeader
-    {
-        /// <summary>
-        /// time stamp 
-        /// </summary>
-        public LlsTimeVal ts;
-
-        /// <summary>
-        /// length of portion present
-        /// </summary>
-        public uint caplen;
-
-        /// <summary>
-        /// length this packet (off wire) 
-        /// </summary>
-        public uint len;
-    }
+    
 
     public class PcapPacketHeader
     {
-        public LlsTimeVal internalTimeStamp { private get; set; }
+        public PcapStructWrapper.LlsTimeVal internalTimeStamp { private get; set; }
         public DateTime timeStamp
         {
             get

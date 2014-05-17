@@ -10,12 +10,13 @@ namespace Amber.Kit.HttpPcap.WinPcap
 
         public string name { get; set; }
         public string description { get; set; }
-        public string address { get; set; }
-        public string netmask { get; set; }
-        public override string ToString()
+        public List<string> address { get; set; }
+
+        public PcapNetworkInterface()
         {
-            return description;
+            address = new List<string>();
         }
+
 
     }
 }

@@ -21,6 +21,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <GenerateSerializationAssemblies>Auto</GenerateSerializationAssemblies>
+    <UseVSHostingProcess>true</UseVSHostingProcess>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -58,21 +59,24 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CommonObject\CommonConfig.cs" />
-    <Compile Include="CommonObject\PcapException.cs" />
-    <Compile Include="Entry.cs" />
+    <Compile Include="Common\ByteHelper.cs" />
+    <Compile Include="Common\PacketPollerBase.cs" />
+    <Compile Include="Common\HttpPcapConfig.cs" />
+    <Compile Include="Common\PcapException.cs" />
+    <Compile Include="RawSocket\RawSocketPacketPoller.cs" />
+    <Compile Include="WinPcap\Headers\EthernetHeader.cs" />
+    <Compile Include="WinPcap\PcapStructWrapper.cs" />
+    <None Include="Entry.cs" />
     <Compile Include="HttpBusiness\HttpBusinessPoller.cs" />
     <Compile Include="HttpBusiness\HttpPacketParser.cs" />
-    <Compile Include="HttpBusiness\HttpRequestHeader.cs" />
-    <Compile Include="HttpBusiness\HttpResponseHeader.cs" />
+    <Compile Include="HttpBusiness\Headers\HttpRequestHeader.cs" />
+    <Compile Include="HttpBusiness\Headers\HttpResponseHeader.cs" />
     <Compile Include="HttpBusiness\HttpTransaction.cs" />
     <Compile Include="HttpBusiness\HttpTransactionMatcher.cs" />
-    <Compile Include="HttpBusiness\IPHeader.cs" />
-    <Compile Include="HttpSession.cs" />
-    <Compile Include="PkFunction.cs" />
+    <Compile Include="HttpBusiness\Headers\IPHeader.cs" />
+    <Compile Include="HttpPcap.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="RawCapture.cs" />
-    <Compile Include="HttpBusiness\TCPHeader.cs" />
+    <Compile Include="HttpBusiness\Headers\TCPHeader.cs" />
     <Compile Include="WinPcap\PcapNetworkInterface.cs" />
     <Compile Include="WinPcap\PcapApiWrapper.cs" />
     <Compile Include="WinPcap\PcapNetworkInterfacePool.cs" />
@@ -85,9 +89,7 @@
       <Name>Utility</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="RawSocket\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

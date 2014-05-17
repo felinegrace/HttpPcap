@@ -9,90 +9,10 @@ namespace Amber.Kit.HttpPcap.WinPcap
 {
     class PcapNetworkInterfacePool
     {
-        /// <summary>
-        /// struct pcap_addr 
-        /// </summary>
-        [StructLayout(LayoutKind.Sequential)]
-        private struct LlsPcapAddr
+
+        private PcapStructWrapper.LlsPcapIf newLlsPcapNetworkInterface()
         {
-            /// <summary>
-            /// if not NULL, a pointer to the next element in the list; 
-            /// NULL for the last element of the list 
-            /// </summary>
-            public IntPtr next;
-
-            /// <summary>
-            /// a pointer to a struct sockaddr containing an address 
-            /// </summary>
-            public IntPtr addr;
-
-            /// <summary>
-            /// if not NULL, a pointer to a struct sockaddr that contains the netmask corresponding to the address pointed to by addr. 
-            /// </summary>
-            public IntPtr netmask;
-
-            /// <summary>
-            /// if not NULL, a pointer to a struct sockaddr that contains the broadcast address corresponding to the address pointed to by addr; 
-            /// may be null if the interface doesn't support 
-            /// </summary>
-            public IntPtr broadaddr;
-
-            /// <summary>
-            /// if not NULL, a pointer to a struct sockaddr that contains the destination address corresponding to the address pointed to by addr; 
-            /// may be null if the interface isn't a point- to-point interface 
-            /// </summary>
-            public IntPtr dstaddr;
-        }
-
-        [StructLayout(LayoutKind.Sequential)]
-        private struct LlsSockaddr
-        {
-            public short family;
-            public ushort port;
-            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
-            public byte[] addr;
-            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 8)]
-            public byte[] zero;
-        }
-
-        /// <summary>
-        /// struct pcap_if 
-        /// </summary>
-        [StructLayout(LayoutKind.Sequential)]
-        private struct LlsPcapIf
-        {
-            /// <summary>
-            /// if not NULL, a pointer to the next element in the list; 
-            /// NULL for the last element of the list 
-            /// </summary>
-            public IntPtr next;
-
-            /// <summary>
-            /// a pointer to a string giving a name for the device to pass to pcap_open_live() 
-            /// </summary>
-            public string name;
-
-            /// <summary>
-            /// if not NULL, a pointer to a string giving a human-readable description of the device
-            /// </summary>
-            public string description;
-
-            /// <summary>
-            /// a pointer to the first element of a list of addresses for the interface 
-            /// </summary>
-            public IntPtr addresses;
-
-            /// <summary>
-            /// PCAP_IF_ interface flags. 
-            /// Currently the only possible flag is PCAP_IF_LOOPBACK, 
-            /// that is set if the interface is a loopback interface.
-            /// </summary>
-            public uint flags;
-        }
-
-        private LlsPcapIf newLlsPcapNetworkInterface()
-        {
-            LlsPcapIf newItem;
+            PcapStructWrapper.LlsPcapIf newItem;
             newItem.addresses = IntPtr.Zero;
             newItem.description = new StringBuilder().ToString();
             newItem.flags = 0;
@@ -101,7 +21,7 @@ namespace Amber.Kit.HttpPcap.WinPcap
             return newItem;
         }
 
-        public List<PcapNetworkInterface> interfaceList { get; set; }
+        private List<PcapNetworkInterface> interfaceList { get; set; }
         public PcapNetworkInterfacePool()
         {
             interfaceList = new List<PcapNetworkInterface>();
@@ -122,10 +42,10 @@ namespace Amber.Kit.HttpPcap.WinPcap
 
             try
             {
-                LlsPcapIf intf = newLlsPcapNetworkInterface();
+                PcapStructWrapper.LlsPcapIf intf = newLlsPcapNetworkInterface();
                 while (PcapApiWrapper.isNotNullPtr(intfIterator))
                 {
-                    intf = PcapApiWrapper.toLowLevelStruct<LlsPcapIf>(intfIterator);
+                    intf = PcapApiWrapper.toLowLevelStruct<PcapStructWrapper.LlsPcapIf>(intfIterator);
                     fillItemToList(intf);
                     intfIterator = intf.next;
                 }
@@ -139,36 +59,40 @@ namespace Amber.Kit.HttpPcap.WinPcap
             }
         }
 
-        private void fillItemToList(LlsPcapIf intf)
+        private void fillItemToList(PcapStructWrapper.LlsPcapIf intf)
         {
             PcapNetworkInterface curInterface = new PcapNetworkInterface();
           
             curInterface.name = intf.name;
             curInterface.description = intf.description;
-            if (PcapApiWrapper.isNotNullPtr(intf.addresses))
+            while (PcapApiWrapper.isNotNullPtr(intf.addresses))
             {
-                LlsPcapAddr pcapAddr = PcapApiWrapper.toLowLevelStruct<LlsPcapAddr>(intf.addresses);
+                PcapStructWrapper.LlsPcapAddr pcapAddr = PcapApiWrapper.toLowLevelStruct<PcapStructWrapper.LlsPcapAddr>(intf.addresses);
                 if (PcapApiWrapper.isNotNullPtr(pcapAddr.addr))
                 {
-                    LlsSockaddr addr = PcapApiWrapper.toLowLevelStruct<LlsSockaddr>(pcapAddr.addr);
-                    curInterface.address =
+                    PcapStructWrapper.LlsSockaddr addr = PcapApiWrapper.toLowLevelStruct<PcapStructWrapper.LlsSockaddr>(pcapAddr.addr);
+                    curInterface.address.Add(
                         addr.addr[0].ToString() + "." +
                         addr.addr[1].ToString() + "." +
                         addr.addr[2].ToString() + "." +
-                        addr.addr[3].ToString();
+                        addr.addr[3].ToString());
                 }
-                if (PcapApiWrapper.isNotNullPtr(pcapAddr.netmask))
-                {
-                    LlsSockaddr mask = PcapApiWrapper.toLowLevelStruct<LlsSockaddr>(pcapAddr.netmask);
-                    curInterface.netmask =
-                        mask.addr[0].ToString() + "." +
-                        mask.addr[1].ToString() + "." +
-                        mask.addr[2].ToString() + "." +
-                        mask.addr[3].ToString();
-                }
+                intf.addresses = pcapAddr.next;
             }
 
             interfaceList.Add(curInterface);
+        }
+
+        public string getNetworkInterfaceNameByIpAddress(string ipAddress)
+        {
+            foreach(PcapNetworkInterface pcapNetworkInterface in interfaceList)
+            {
+                if (pcapNetworkInterface.address.Contains(ipAddress))
+                {
+                    return pcapNetworkInterface.name;
+                }
+            }
+            return null;
         }
     }
 }

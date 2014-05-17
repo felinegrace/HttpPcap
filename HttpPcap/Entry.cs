@@ -103,10 +103,6 @@ namespace Amber.Kit.HttpPcap
             }
 
 
-            Myrecvie = new RecApacket(UpdateRecPacket);
-            myupdatemsg = new updatemsg(updatemsginstance);
-            myupdatestatehandle = new updae_state_del(update_statecode_instance);
-
 
         }
 
@@ -124,39 +120,6 @@ namespace Amber.Kit.HttpPcap
             Logger.error(message);
         }
 
-        private void ReceivePacket_pcap(PcapPacketHeader p, byte[] s)
-        {
-
-      
-            if (s[23] != 0x06) return;
-            if (s[12] != 0x08 && s[13] != 0x00) return;
-
-            if (p.caplen <= 60) return;
-            int offset = 34;
-            int srcport = PkFunction.Get2Bytes(s, ref offset, 0);
-            int desport = PkFunction.Get2Bytes(s, ref offset, 0);
-
-            bool isok = false;
-            if (CommonConfig.iswhiteport(desport))
-            {
-                isok = true;
-                if (s[47] == 0x18) qpscount++;
-            }
-            else if (CommonConfig.iswhiteport(srcport))
-            {
-
-                isok = true;
-            }
-            if (!isok) return;
-
-
-
-            byte[] t = new byte[p.caplen - 14];
-            Array.Copy(s, 14, t, 0, t.Length);
-
-
-            httpbusiness.postRequest(new DescriptorReference(t, t.Length));
-        }
 
 
 
@@ -293,26 +256,7 @@ namespace Amber.Kit.HttpPcap
 
         }
 
-        private void onReq(byte[] req)
-        {
-            Logger.debug("\n^^^req = {0}", System.Text.Encoding.UTF8.GetString(req));
 
-        }
-
-        private void onResp(byte[] resp)
-        {
-            Logger.debug("\n&&&rsp = {0}", System.Text.Encoding.UTF8.GetString(resp));
-            
-
-        }
-
-        private void onTransaction(byte[] req, byte[] resp)
-        {
-            Logger.debug("\n>>>req = {0}", System.Text.Encoding.UTF8.GetString(req));
-
-            Logger.debug("\n>>>rsp = {0}", System.Text.Encoding.UTF8.GetString(resp));
-            
-        }
 
         private bool isimage(string head)
         {

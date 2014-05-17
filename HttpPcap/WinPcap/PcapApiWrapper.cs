@@ -6,7 +6,7 @@ using System.Text;
 
 namespace Amber.Kit.HttpPcap.WinPcap
 {
-    class PcapApiWrapper
+    public class PcapApiWrapper
     {
         private const string pcapBinaryName = "wpcap.dll";
 

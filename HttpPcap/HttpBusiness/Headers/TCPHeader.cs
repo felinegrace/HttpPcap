@@ -25,42 +25,35 @@ namespace Amber.Kit.HttpPcap.HttpBusiness
        
         public TCPHeader(byte [] byBuffer, int nReceived)
         {
-            try
-            {
-                MemoryStream memoryStream = new MemoryStream(byBuffer, 0, nReceived);
-                BinaryReader binaryReader = new BinaryReader(memoryStream);
+            MemoryStream memoryStream = new MemoryStream(byBuffer, 0, nReceived);
+            BinaryReader binaryReader = new BinaryReader(memoryStream);
            
-                usSourcePort = (ushort)IPAddress.NetworkToHostOrder(binaryReader.ReadInt16 ());
+            usSourcePort = (ushort)IPAddress.NetworkToHostOrder(binaryReader.ReadInt16 ());
 
-                usDestinationPort = (ushort)IPAddress.NetworkToHostOrder(binaryReader.ReadInt16 ());
+            usDestinationPort = (ushort)IPAddress.NetworkToHostOrder(binaryReader.ReadInt16 ());
 
-                uiSequenceNumber = (uint)IPAddress.NetworkToHostOrder(binaryReader.ReadInt32());
+            uiSequenceNumber = (uint)IPAddress.NetworkToHostOrder(binaryReader.ReadInt32());
 
-                uiAcknowledgementNumber = (uint)IPAddress.NetworkToHostOrder(binaryReader.ReadInt32());
+            uiAcknowledgementNumber = (uint)IPAddress.NetworkToHostOrder(binaryReader.ReadInt32());
 
-                usDataOffsetAndFlags = (ushort)IPAddress.NetworkToHostOrder(binaryReader.ReadInt16());
+            usDataOffsetAndFlags = (ushort)IPAddress.NetworkToHostOrder(binaryReader.ReadInt16());
 
-                usWindow = (ushort)IPAddress.NetworkToHostOrder(binaryReader.ReadInt16());
+            usWindow = (ushort)IPAddress.NetworkToHostOrder(binaryReader.ReadInt16());
 
-                sChecksum = (short)IPAddress.NetworkToHostOrder(binaryReader.ReadInt16());
+            sChecksum = (short)IPAddress.NetworkToHostOrder(binaryReader.ReadInt16());
 
-                usUrgentPointer = (ushort)IPAddress.NetworkToHostOrder(binaryReader.ReadInt16());
+            usUrgentPointer = (ushort)IPAddress.NetworkToHostOrder(binaryReader.ReadInt16());
 
-                byHeaderLength = (byte)(usDataOffsetAndFlags >> 12);
-                byHeaderLength *= 4;
+            byHeaderLength = (byte)(usDataOffsetAndFlags >> 12);
+            byHeaderLength *= 4;
 
-                //Copy the data carried by the data gram into another array so that
-                //according to the protocol being carried in the IP datagram
-                byTCPData = new byte[nReceived - byHeaderLength];
-                Array.Copy(byBuffer,
-                           byHeaderLength,  //start copying from the end of the header
-                           byTCPData, 0,
-                           byTCPData.Length);
-            }
-            catch (Exception ex)
-            {
-            //    MessageBox.Show(ex.Message, "HttpWatch " + (nReceived), MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
+            //Copy the data carried by the data gram into another array so that
+            //according to the protocol being carried in the IP datagram
+            byTCPData = new byte[nReceived - byHeaderLength];
+            Array.Copy(byBuffer,
+                        byHeaderLength,  //start copying from the end of the header
+                        byTCPData, 0,
+                        byTCPData.Length);
         }
 
         public ushort SourcePort

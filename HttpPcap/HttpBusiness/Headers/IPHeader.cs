@@ -27,73 +27,66 @@ namespace Amber.Kit.HttpPcap.HttpBusiness
 
         public IPHeader(byte[] byBuffer, int nReceived)
         {
-            
-            try
+            //Create MemoryStream out of the received bytes
+            MemoryStream memoryStream = new MemoryStream(byBuffer, 0, nReceived);
+            //Next we create a BinaryReader out of the MemoryStream
+            BinaryReader binaryReader = new BinaryReader(memoryStream);
+
+            //The first eight bits of the IP header contain the version and
+            //header length so we read them
+            byVersionAndHeaderLength = binaryReader.ReadByte();
+
+            //The next eight bits contain the Differentiated services
+            byDifferentiatedServices = binaryReader.ReadByte();
+
+            //Next eight bits hold the total length of the datagram
+                usTotalLength = (ushort)IPAddress.NetworkToHostOrder(binaryReader.ReadInt16());
+
+            if (usTotalLength == 0)
             {
-                //Create MemoryStream out of the received bytes
-                MemoryStream memoryStream = new MemoryStream(byBuffer, 0, nReceived);
-                //Next we create a BinaryReader out of the MemoryStream
-                BinaryReader binaryReader = new BinaryReader(memoryStream);
-
-                //The first eight bits of the IP header contain the version and
-                //header length so we read them
-                byVersionAndHeaderLength = binaryReader.ReadByte();
-
-                //The next eight bits contain the Differentiated services
-                byDifferentiatedServices = binaryReader.ReadByte();
-
-                //Next eight bits hold the total length of the datagram
-                 usTotalLength = (ushort)IPAddress.NetworkToHostOrder(binaryReader.ReadInt16());
-
-                if (usTotalLength == 0)
-                {
-                    usTotalLength = (ushort)byBuffer.Length;
-                }
-
-                //Next sixteen have the identification bytes
-                usIdentification = (ushort)IPAddress.NetworkToHostOrder(binaryReader.ReadInt16());
-
-                //Next sixteen bits contain the flags and fragmentation offset
-                usFlagsAndOffset = (ushort)IPAddress.NetworkToHostOrder(binaryReader.ReadInt16());
-
-                //Next eight bits have the TTL value
-                byTTL = binaryReader.ReadByte();
-
-                //Next eight represnts the protocol encapsulated in the datagram
-                byProtocol = binaryReader.ReadByte();
-
-                //Next sixteen bits contain the checksum of the header
-                sChecksum = IPAddress.NetworkToHostOrder(binaryReader.ReadInt16());
-
-                //Next thirty two bits have the source IP address
-                uiSourceIPAddress = (uint)(binaryReader.ReadInt32());
-
-                //Next thirty two hold the destination IP address
-                uiDestinationIPAddress = (uint)(binaryReader.ReadInt32());
-
-                //Now we calculate the header length
-
-                byHeaderLength = byVersionAndHeaderLength;
-                //The last four bits of the version and header length field contain the
-                //header length, we perform some simple binary airthmatic operations to
-                //extract them
-                byHeaderLength <<= 4;
-                byHeaderLength >>= 4;
-                //Multiply by four to get the exact header length
-                byHeaderLength *= 4;
-
-                //Copy the data carried by the data gram into another array so that
-                //according to the protocol being carried in the IP datagram
-                byIPData = new byte[usTotalLength - byHeaderLength];
-                Array.Copy(byBuffer, 
-                           byHeaderLength,  //start copying from the end of the header
-                           byIPData, 0,
-                           byIPData.Length);
+                usTotalLength = (ushort)byBuffer.Length;
             }
-        catch (Exception ex)
-        {
-            //MessageBox.Show(ex.ToString(), "Httpwatch", MessageBoxButtons.OK,   MessageBoxIcon.Error);
-        }
+
+            //Next sixteen have the identification bytes
+            usIdentification = (ushort)IPAddress.NetworkToHostOrder(binaryReader.ReadInt16());
+
+            //Next sixteen bits contain the flags and fragmentation offset
+            usFlagsAndOffset = (ushort)IPAddress.NetworkToHostOrder(binaryReader.ReadInt16());
+
+            //Next eight bits have the TTL value
+            byTTL = binaryReader.ReadByte();
+
+            //Next eight represnts the protocol encapsulated in the datagram
+            byProtocol = binaryReader.ReadByte();
+
+            //Next sixteen bits contain the checksum of the header
+            sChecksum = IPAddress.NetworkToHostOrder(binaryReader.ReadInt16());
+
+            //Next thirty two bits have the source IP address
+            uiSourceIPAddress = (uint)(binaryReader.ReadInt32());
+
+            //Next thirty two hold the destination IP address
+            uiDestinationIPAddress = (uint)(binaryReader.ReadInt32());
+
+            //Now we calculate the header length
+
+            byHeaderLength = byVersionAndHeaderLength;
+            //The last four bits of the version and header length field contain the
+            //header length, we perform some simple binary airthmatic operations to
+            //extract them
+            byHeaderLength <<= 4;
+            byHeaderLength >>= 4;
+            //Multiply by four to get the exact header length
+            byHeaderLength *= 4;
+
+            //Copy the data carried by the data gram into another array so that
+            //according to the protocol being carried in the IP datagram
+            byIPData = new byte[usTotalLength - byHeaderLength];
+            Array.Copy(byBuffer, 
+                        byHeaderLength,  //start copying from the end of the header
+                        byIPData, 0,
+                        byIPData.Length);
+
         }
 
         public string Version
