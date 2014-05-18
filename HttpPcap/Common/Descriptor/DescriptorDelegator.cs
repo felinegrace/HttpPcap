@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Cabinet.Utility
+namespace Amber.Kit.HttpPcap.Common
 {
-    public class DescriptorReference : Descriptor
+    class DescriptorReference : Descriptor
     {
 
         public DescriptorReference( byte[] des, int desLength , int desCapacity )

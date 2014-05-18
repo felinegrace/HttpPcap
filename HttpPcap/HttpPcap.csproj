@@ -22,6 +22,7 @@
     <WarningLevel>4</WarningLevel>
     <GenerateSerializationAssemblies>Auto</GenerateSerializationAssemblies>
     <UseVSHostingProcess>true</UseVSHostingProcess>
+    <DocumentationFile>bin\Debug\HttpPcap.XML</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -60,9 +61,17 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Common\ByteHelper.cs" />
+    <Compile Include="Common\Descriptor\Descriptor.cs" />
+    <Compile Include="Common\Descriptor\DescriptorBuffer.cs" />
+    <Compile Include="Common\Descriptor\DescriptorDelegator.cs" />
+    <Compile Include="Common\Descriptor\DescriptorException.cs" />
     <Compile Include="Common\PacketPollerBase.cs" />
-    <Compile Include="Common\HttpPcapConfig.cs" />
+    <Compile Include="Common\Polling\EventablePollingThread.cs" />
+    <Compile Include="Common\Polling\PollingThread.cs" />
+    <Compile Include="Common\Polling\SingleListServer.cs" />
+    <Compile Include="Entry\HttpPcapConfig.cs" />
     <Compile Include="Common\PcapException.cs" />
+    <Compile Include="Entry\HttpPcapEventArgs.cs" />
     <Compile Include="RawSocket\RawSocketPacketPoller.cs" />
     <Compile Include="WinPcap\Headers\EthernetHeader.cs" />
     <Compile Include="WinPcap\PcapStructWrapper.cs" />
@@ -74,7 +83,7 @@
     <Compile Include="HttpBusiness\HttpTransaction.cs" />
     <Compile Include="HttpBusiness\HttpTransactionMatcher.cs" />
     <Compile Include="HttpBusiness\Headers\IPHeader.cs" />
-    <Compile Include="HttpPcap.cs" />
+    <Compile Include="Entry\HttpPcap.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="HttpBusiness\Headers\TCPHeader.cs" />
     <Compile Include="WinPcap\PcapNetworkInterface.cs" />
@@ -82,12 +91,6 @@
     <Compile Include="WinPcap\PcapNetworkInterfacePool.cs" />
     <Compile Include="WinPcap\PcapPacketHeader.cs" />
     <Compile Include="WinPcap\PcapPacketPoller.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Utility\Utility.csproj">
-      <Project>{a532a29f-9292-4d18-bb95-96a6af2643a7}</Project>
-      <Name>Utility</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

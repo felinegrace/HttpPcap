@@ -5,9 +5,9 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 
-namespace Cabinet.Utility
+namespace Amber.Kit.HttpPcap.Common
 {
-    public abstract class SingleListServer<T> : EventablePollingThread
+    abstract class SingleListServer<T> : EventablePollingThread
     {
         private class ServerEventArgs : EventArgs
         {

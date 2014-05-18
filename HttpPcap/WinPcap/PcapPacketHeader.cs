@@ -8,7 +8,7 @@ namespace Amber.Kit.HttpPcap.WinPcap
 {
     
 
-    public class PcapPacketHeader
+    class PcapPacketHeader
     {
         public PcapStructWrapper.LlsTimeVal internalTimeStamp { private get; set; }
         public DateTime timeStamp

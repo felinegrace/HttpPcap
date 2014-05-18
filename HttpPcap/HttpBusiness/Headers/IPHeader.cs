@@ -5,7 +5,7 @@ using System.IO;
 
 namespace Amber.Kit.HttpPcap.HttpBusiness
 {
-    public class IPHeader
+    class IPHeader
     {
         //IP Header fields
         private byte      byVersionAndHeaderLength;   //Eight bits for version and header length

@@ -6,6 +6,9 @@ using System.Text;
 
 namespace Amber.Kit.HttpPcap.WinPcap
 {
+    /// <summary>
+    /// 封装部分了WinPcap的C结构体,以便在C#中调用,并以前缀LLS(即LowLevelStruct)注明.
+    /// </summary>
     public class PcapStructWrapper
     {
         /// <summary>
@@ -43,13 +46,31 @@ namespace Amber.Kit.HttpPcap.WinPcap
             public IntPtr dstaddr;
         }
 
+        /// <summary>
+        /// struct sockaddr , actual it is sockaddr_in
+        /// </summary>
         [StructLayout(LayoutKind.Sequential)]
         public struct LlsSockaddr
         {
+            /// <summary>
+            /// Address family (must be AF_INET).
+            /// </summary>
             public short family;
+
+            /// <summary>
+            /// IP port.
+            /// </summary>
             public ushort port;
+
+            /// <summary>
+            /// IP address.
+            /// </summary>
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
             public byte[] addr;
+
+            /// <summary>
+            /// Padding to make structure the same size as SOCKADDR.
+            /// </summary>
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 8)]
             public byte[] zero;
         }
@@ -95,7 +116,14 @@ namespace Amber.Kit.HttpPcap.WinPcap
         [StructLayout(LayoutKind.Sequential)]
         public struct LlsTimeVal
         {
+            /// <summary>
+            /// Time interval, in seconds.
+            /// </summary>
             public uint tv_sec;
+
+            /// <summary>
+            /// Time interval, in microseconds. This value is used in combination with the tv_sec member to represent time interval values that are not a multiple of seconds.
+            /// </summary>
             public uint tv_usec;
         }
 

@@ -3,14 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
-using Cabinet.Utility;
-using Amber.Kit.HttpPcap.CommonObject;
 using Amber.Kit.HttpPcap.Common;
 
 
 namespace Amber.Kit.HttpPcap.WinPcap
 {
-    public class PcapPacketPoller : PacketPollerBase
+    class PcapPacketPoller : PacketPollerBase
     {
         private IntPtr pcapHandle { get; set; }
 

@@ -10,7 +10,7 @@ using Cabinet.Utility;
 using System.Text.RegularExpressions;
 using System.Net;
 using Amber.Kit.HttpPcap.WinPcap;
-using Amber.Kit.HttpPcap.CommonObject;
+using Amber.Kit.HttpPcap.Common;
 using Amber.Kit.HttpPcap.HttpBusiness;
 
 namespace Amber.Kit.HttpPcap

@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 
-namespace Cabinet.Utility
+namespace Amber.Kit.HttpPcap.Common
 {
-    public abstract class EventablePollingThread : PollingThread
+    abstract class EventablePollingThread : PollingThread
     {
         private AutoResetEvent notifyEvent { get; set; }
         public EventablePollingThread(AutoResetEvent notifyEvent)

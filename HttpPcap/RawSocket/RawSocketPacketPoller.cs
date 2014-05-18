@@ -4,10 +4,6 @@ using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
-using Cabinet.Utility;
-
-using Amber.Kit.HttpPcap.WinPcap;
-using Amber.Kit.HttpPcap.CommonObject;
 using Amber.Kit.HttpPcap.Common;
 
 

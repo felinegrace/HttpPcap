@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Cabinet.Utility
+namespace Amber.Kit.HttpPcap.Common
 {
-    public class DescriptorException : Exception
+    class DescriptorException : Exception
     {
         public DescriptorException(string message) : base(message)
         {

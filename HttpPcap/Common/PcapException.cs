@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Amber.Kit.HttpPcap.CommonObject
+namespace Amber.Kit.HttpPcap.Common
 {
-    public class PcapException : Exception
+    class PcapException : Exception
     {
         public PcapException(string message) : base(message)
         {

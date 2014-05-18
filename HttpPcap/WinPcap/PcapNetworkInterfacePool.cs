@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
-using Amber.Kit.HttpPcap.CommonObject;
+using Amber.Kit.HttpPcap.Common;
 
 namespace Amber.Kit.HttpPcap.WinPcap
 {

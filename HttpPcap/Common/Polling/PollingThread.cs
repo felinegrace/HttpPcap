@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 
-namespace Cabinet.Utility
+namespace Amber.Kit.HttpPcap.Common
 {
-    public abstract class PollingThread
+    abstract class PollingThread
     {
         private Thread thread { get; set; }
         private AutoResetEvent terminalEvent { get; set; }
@@ -45,7 +45,6 @@ namespace Cabinet.Utility
             catch (System.Exception ex)
             {
                 stop();
-                Logger.error(ex.Message);
                 if (onError != null)
                     onError(ex.Message);
             }

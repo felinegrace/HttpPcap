@@ -5,7 +5,7 @@ using System.IO;
 
 namespace Amber.Kit.HttpPcap.HttpBusiness
 {
-    public class TCPHeader
+    class TCPHeader
     {
         //TCP header fields
         private ushort usSourcePort;              //Sixteen bits for the source port number

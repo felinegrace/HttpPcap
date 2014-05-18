@@ -2,8 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Cabinet.Utility;
-using Amber.Kit.HttpPcap.CommonObject;
+using Amber.Kit.HttpPcap.Common;
 
 namespace Amber.Kit.HttpPcap.HttpBusiness
 {
@@ -82,6 +81,7 @@ namespace Amber.Kit.HttpPcap.HttpBusiness
             if (responseIntegrity)
             {
                 responseData = new byte[2] { (byte)'3', (byte)'1' };
+
                 if (onResponse != null)
                 {
                     onResponse(responseData);

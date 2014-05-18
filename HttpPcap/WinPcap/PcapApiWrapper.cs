@@ -6,6 +6,9 @@ using System.Text;
 
 namespace Amber.Kit.HttpPcap.WinPcap
 {
+    /// <summary>
+    /// 封装部分了WinPcap的C函数接口,以便在C#中调用.
+    /// </summary>
     public class PcapApiWrapper
     {
         private const string pcapBinaryName = "wpcap.dll";
@@ -132,12 +135,12 @@ namespace Amber.Kit.HttpPcap.WinPcap
         [DllImport(pcapBinaryName)]
         public static extern int pcap_setmintocopy(IntPtr p, int size);
 
-        public static bool isNotNullPtr(IntPtr ptr)
+        internal static bool isNotNullPtr(IntPtr ptr)
         {
             return ptr != IntPtr.Zero;
         }
 
-        public static T toLowLevelStruct<T>(IntPtr LlsPtr)
+        internal static T toLowLevelStruct<T>(IntPtr LlsPtr)
         {
             return (T)Marshal.PtrToStructure(LlsPtr, typeof(T));
         }
