@@ -13,7 +13,7 @@ namespace Amber.Kit.HttpPcap
     /// HttpPcap抓包的入口功能类,可以在这里启动和停止抓包,同时也需要在这里设置事件回调. <para/>
     /// 本程序有多种工作方式,请参考<see cref="Amber.Kit.HttpPcap.HttpPcapConfig.pcapMode">HttpPcapConfig.pcapMode</see>.<para/>
     /// </summary>
-    public class HttpPcap
+    public class HttpPcapEntry
     {
         private HttpPcapConfig httpPcapConfig { get; set; }
         private HttpBusinessPoller httpBusinessPoller { get; set; }
@@ -76,11 +76,12 @@ namespace Amber.Kit.HttpPcap
 
         /// <summary>
         /// 在这里实例化HttpPcap抓包的入口功能类,实例化时必须提供一个配置对象.<para/>
+        /// 如果配置格式有误将抛出异常. <para/>
         /// </summary>
         /// <param name="httpPcapConfig">
         /// 配置对象.
         /// </param>
-        public HttpPcap(HttpPcapConfig httpPcapConfig)
+        public HttpPcapEntry(HttpPcapConfig httpPcapConfig)
         {
             httpPcapConfig.validate();
             this.httpPcapConfig = httpPcapConfig;
@@ -109,63 +110,34 @@ namespace Amber.Kit.HttpPcap
         }
 
         /// <summary>
-        /// 启动Http抓包, 请注意保证不要重复启动.<para/>
+        /// 启动Http抓包.<para/>
         /// </summary>
         /// <remarks>
         /// 启动Http抓包将会使用额外的两个线程.
         /// </remarks>
         public void start()
         {
-            try
+            if(!alreadyStarted)
             {
-                if(!alreadyStarted)
-                {
-                    httpBusinessPoller.start();
-                    packetPoller.start();
-                    alreadyStarted = true;
-                }
-                else
-                {
-                    onError("HttpPcap is already running.");
-                }
-
-            }
-            catch (System.Exception ex)
-            {
-                onError(ex.Message);
+                alreadyStarted = true;
+                httpBusinessPoller.start();
+                packetPoller.start();
             }
         }
 
         /// <summary>
-        /// 停止Http抓包, 请注意保证不要重复停止.<para/>
+        /// 停止Http抓包.<para/>
         /// </summary>
         public void stop()
         {
-            try
-            {
-                if (alreadyStarted)
-                {
-                    httpBusinessPoller.stop();
-                    packetPoller.stop();
-                }
-                else
-                {
-                    onError("HttpPcap is not running.");
-                }
-            }
-            catch (System.Exception ex)
-            {
-                onError(ex.Message);
-            }
-            finally
-            {
-                alreadyStarted = false;
-            }
+            httpBusinessPoller.stop();
+            packetPoller.stop();
+            alreadyStarted = false;   
         }
 
         /// <summary>
         /// 程序并不清楚是否每一个HTTP请求都能得到回应.<para/>
-        /// 由于时间紧迫,现在每一个请求都会一直等待回应.<para/>
+        /// 由于时间紧迫,现在每一个请求都会一直等待回应.因此随着运行时间变长,未回应的请求会持续堆积在内存中.<para/>
         /// 本方法是一个临时的解决方案,清除所有正在等待回应的HTTP请求.<para/>
         /// 清除后如果回应真的到来,将被忽略,也不会在onHttpPcapResponseEvent中给出.<para/>
         /// 本块功能需要更多的时间设计完善.<para/>
@@ -207,6 +179,7 @@ namespace Amber.Kit.HttpPcap
 
         private void onError(string message)
         {
+            stop();
             onHttpPcapErrorEvent(this, new HttpPcapErrorEventArgs(message));
         }
     }

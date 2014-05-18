@@ -18,6 +18,7 @@ namespace Amber.Kit.HttpPcap.Common
         {
             base.stop();
             notifyEvent.Set();
+            
         }
 
         protected void notify()

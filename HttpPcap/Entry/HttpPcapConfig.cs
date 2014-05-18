@@ -7,7 +7,8 @@ using Amber.Kit.HttpPcap.Common;
 namespace Amber.Kit.HttpPcap
 {
     /// <summary>
-    /// HttpPcap的配置,每个HttpPcap的功能类实例化时必须提供一个配置.<para/>
+    /// <see cref = "Amber.Kit.HttpPcap.HttpPcapEntry">HttpPcapEntry</see>的配置,
+    /// <see cref = "Amber.Kit.HttpPcap.HttpPcapEntry">HttpPcapEntry</see>实例化时必须提供一个配置.<para/>
     /// 由于时间紧迫,有些配置暂时是必须的.<para/>
     /// </summary>
     public class HttpPcapConfig

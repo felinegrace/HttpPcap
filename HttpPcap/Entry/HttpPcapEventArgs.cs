@@ -6,8 +6,8 @@ using System.Text;
 namespace Amber.Kit.HttpPcap
 {
     /// <summary>
-    /// 事件<see cref = "Amber.Kit.HttpPcap.HttpPcap.onHttpPcapRequestEvent">HttpPcap.onHttpPcapRequestEvent</see>
-    /// 与<see cref = "Amber.Kit.HttpPcap.HttpPcap.onHttpPcapRequestEvent">HttpPcap.onHttpPcapResponseEvent</see>
+    /// 事件<see cref = "Amber.Kit.HttpPcap.HttpPcapEntry.onHttpPcapRequestEvent">HttpPcapEntry.onHttpPcapRequestEvent</see>
+    /// 与<see cref = "Amber.Kit.HttpPcap.HttpPcapEntry.onHttpPcapRequestEvent">HttpPcapEntry.onHttpPcapResponseEvent</see>
     /// 的通用参数.<para/>
     /// </summary>
     public class HttpPacketEventArgs : EventArgs
@@ -25,7 +25,7 @@ namespace Amber.Kit.HttpPcap
     }
 
     /// <summary>
-    /// 事件<see cref = "Amber.Kit.HttpPcap.HttpPcap.onHttpPcapTransactionEvent">HttpPcap.onHttpPcapTransactionEvent</see>的参数.<para/>
+    /// 事件<see cref = "Amber.Kit.HttpPcap.HttpPcapEntry.onHttpPcapTransactionEvent">HttpPcapEntry.onHttpPcapTransactionEvent</see>的参数.<para/>
     /// </summary>
     public class HttpTransactionEventArgs : EventArgs
     {
@@ -48,7 +48,7 @@ namespace Amber.Kit.HttpPcap
     }
 
     /// <summary>
-    /// 事件<see cref = "Amber.Kit.HttpPcap.HttpPcap.onHttpPcapErrorEvent">HttpPcap.onHttpPcapErrorEvent</see>的参数.<para/>
+    /// 事件<see cref = "Amber.Kit.HttpPcap.HttpPcapEntry.onHttpPcapErrorEvent">HttpPcapEntry.onHttpPcapErrorEvent</see>的参数.<para/>
     /// </summary>
     public class HttpPcapErrorEventArgs : EventArgs
     {

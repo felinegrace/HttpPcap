@@ -12,7 +12,7 @@ namespace Amber.Kit.HttpPcap.WinPcap
     {
         private IntPtr pcapHandle { get; set; }
 
-        private const int waitMillisecondsForReadingAfterPacketArrived = 0;
+        private const int waitTimeOut = -1;
         private const int PCAP_OPENFLAG_PROMISCUOUS = 1;
         private const int PCAP_OPENFLAG_DATATX_UDP = 2;
         private const int PCAP_OPENFLAG_NOCAPTURE_RPCAP = 4;
@@ -29,6 +29,12 @@ namespace Amber.Kit.HttpPcap.WinPcap
         {
             IntPtr llsPacketHeaderPtr = IntPtr.Zero;
             IntPtr llPacketBufferPtr = IntPtr.Zero;
+            //problem not found
+            //seems impossible
+            //if (!PcapApiWrapper.isNotNullPtr(this.pcapHandle))
+            //{
+            //    return false;
+            //}
             switch (PcapApiWrapper.pcap_next_ex(this.pcapHandle, ref llsPacketHeaderPtr, ref llPacketBufferPtr))
             {
                 case 0:
@@ -78,10 +84,11 @@ namespace Amber.Kit.HttpPcap.WinPcap
 
         protected override void onStart()
         {
+
             PcapNetworkInterfacePool pcapNetworkInterfacePool = new PcapNetworkInterfacePool();
             pcapNetworkInterfacePool.findAllInterfaces();
             string networkInterfaceName = pcapNetworkInterfacePool.getNetworkInterfaceNameByIpAddress(ipAddress);
-
+            
             if (networkInterfaceName == null)
             {
                 throw new PcapException("cannot find network interface.");
@@ -91,7 +98,7 @@ namespace Amber.Kit.HttpPcap.WinPcap
                 networkInterfaceName, 
                 maxiumBytesStoredOfEachPacket,
                 PCAP_OPENFLAG_PROMISCUOUS,
-                waitMillisecondsForReadingAfterPacketArrived,
+                waitTimeOut,
                 IntPtr.Zero, errBuffer);
 
             if (!PcapApiWrapper.isNotNullPtr(pcapHandle))
@@ -104,6 +111,8 @@ namespace Amber.Kit.HttpPcap.WinPcap
             {
                 throw new PcapException("error setting internal copy threshold.");
             }
+
+            
         }
 
         protected override void onStop()

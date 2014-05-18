@@ -12,6 +12,7 @@ namespace Amber.Kit.HttpPcap.Common
         protected Descriptor descriptor { get; set; }
 
         protected const int maxiumBytesStoredOfEachPacket = 256 * 256;
+
         public PacketPollerBase(string ipAddress, Action<Descriptor> onPacket)
         {
             this.ipAddress = ipAddress;

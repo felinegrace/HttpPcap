@@ -80,8 +80,6 @@ namespace Amber.Kit.HttpPcap.HttpBusiness
                 out responseIntegrity, out requestData, out responseData);
             if (responseIntegrity)
             {
-                responseData = new byte[2] { (byte)'3', (byte)'1' };
-
                 if (onResponse != null)
                 {
                     onResponse(responseData);
@@ -93,5 +91,9 @@ namespace Amber.Kit.HttpPcap.HttpBusiness
             }
         }
 
+        protected override void onStart()
+        {
+            ignoreUnresponsedRequest();
+        }
     }
 }

@@ -33,7 +33,8 @@ namespace Amber.Kit.HttpPcap.WinPcap
             if (isIP())
             {
                 ethernetData = new byte[packetDataLength - headerLength];
-                Marshal.Copy(packetDataPtr + headerLength, ethernetData, 0, ethernetData.Length);
+                IntPtr ethernetDataOffset = new IntPtr(packetDataPtr.ToInt64() + headerLength);
+                Marshal.Copy(ethernetDataOffset, ethernetData, 0, ethernetData.Length);
             }
         }
 

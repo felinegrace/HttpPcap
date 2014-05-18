@@ -36,6 +36,7 @@ namespace Amber.Kit.HttpPcap.Common
         {
             try
             {
+                terminalEvent.Reset();
                 onStart();
                 while (!terminalEvent.WaitOne(0))
                 {

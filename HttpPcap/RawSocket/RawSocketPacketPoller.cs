@@ -25,9 +25,13 @@ namespace Amber.Kit.HttpPcap.RawSocket
         }
         protected override void onPolling()
         {
-            int length = socket.Receive(descriptor.des, 0, descriptor.desCapacity, SocketFlags.None);
-            descriptor.desLength = length;
-            onPacket(descriptor);
+            if (socket.Poll(0, SelectMode.SelectRead))
+            {
+                int length = socket.Receive(descriptor.des, 0, descriptor.desCapacity, SocketFlags.None);
+                descriptor.desLength = length;
+                onPacket(descriptor);
+            }
+            
         }
 
         protected override void onStart()
@@ -40,12 +44,15 @@ namespace Amber.Kit.HttpPcap.RawSocket
             socket.Bind(new IPEndPoint(IPAddress.Parse(ipAddress), 0));
             socket.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.HeaderIncluded, true);
             socket.IOControl(SIO_RCVALL, IN, OUT);
-          
         }
 
         protected override void onStop()
         {
-            socket.Close();
+            if(socket != null)
+            {
+                socket.Close();
+                socket = null;
+            }
         }
     }
 }

@@ -9,8 +9,9 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Amber.Kit.HttpPcap</RootNamespace>
     <AssemblyName>HttpPcap</AssemblyName>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -53,9 +54,13 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Threading, Version=1.0.2856.102, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>Lib\System.Threading.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
   </ItemGroup>
@@ -75,7 +80,6 @@
     <Compile Include="RawSocket\RawSocketPacketPoller.cs" />
     <Compile Include="WinPcap\Headers\EthernetHeader.cs" />
     <Compile Include="WinPcap\PcapStructWrapper.cs" />
-    <None Include="Entry.cs" />
     <Compile Include="HttpBusiness\HttpBusinessPoller.cs" />
     <Compile Include="HttpBusiness\HttpPacketParser.cs" />
     <Compile Include="HttpBusiness\Headers\HttpRequestHeader.cs" />
@@ -83,7 +87,7 @@
     <Compile Include="HttpBusiness\HttpTransaction.cs" />
     <Compile Include="HttpBusiness\HttpTransactionMatcher.cs" />
     <Compile Include="HttpBusiness\Headers\IPHeader.cs" />
-    <Compile Include="Entry\HttpPcap.cs" />
+    <Compile Include="Entry\HttpPcapEntry.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="HttpBusiness\Headers\TCPHeader.cs" />
     <Compile Include="WinPcap\PcapNetworkInterface.cs" />
@@ -93,6 +97,11 @@
     <Compile Include="WinPcap\PcapPacketPoller.cs" />
   </ItemGroup>
   <ItemGroup />
+  <ItemGroup>
+    <None Include="Lib\System.Threading.chm" />
+    <EmbeddedResource Include="Lib\System.Threading.dll" />
+    <None Include="Lib\System.Threading.xml" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
