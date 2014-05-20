@@ -15,9 +15,9 @@ namespace Demo_HttpPcapConsole
 
             HttpPcapConfig config = new HttpPcapConfig();
             config.serverPortsFilter.Add(80);
-            config.pcapIpAddress = "10.31.31.31";
+            config.pcapIpAddress = "10.31.31.32";
             config.remoteDomainFilter = "www.baidu.com";
-            config.pcapMode = "winpcap";
+            config.pcapMode = "rawsocket";
             HttpPcapEntry pcap;
             try
             {
@@ -61,13 +61,15 @@ namespace Demo_HttpPcapConsole
         //回应包因为有加密的情况,演示程序只打印其中一部分.
         private static void onResp(object sender, HttpPacketEventArgs args)
         {
-            Logger.debug("\n^^^part of rsp = {0}", System.Text.Encoding.UTF8.GetString(args.content, 0, 128));
+            int partLength = args.content.Length > 128 ? 128 : args.content.Length - 1;
+            Logger.debug("\n^^^part of rsp = {0}", System.Text.Encoding.UTF8.GetString(args.content, 0, partLength));
         }
 
         private static void onTrans(object sender, HttpTransactionEventArgs args)
         {
             Logger.debug("\n>>>req = {0}", System.Text.Encoding.UTF8.GetString(args.requestContent));
-            Logger.debug("\n>>>part of rsp = {0}", System.Text.Encoding.UTF8.GetString(args.responseContent, 0, 128));
+            int partLength = args.responseContent.Length > 128 ? 128 : args.responseContent.Length - 1;
+            Logger.debug("\n>>>part of rsp = {0}", System.Text.Encoding.UTF8.GetString(args.responseContent, 0, partLength));
         }
 
         private static void onErr(object sender, HttpPcapErrorEventArgs args)

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -9,6 +8,7 @@ namespace Amber.Kit.HttpPcap.Common
 {
     abstract class SingleListServer<T> : EventablePollingThread
     {
+        private object queueLocker { get; set; }
         private class ServerEventArgs : EventArgs
         {
             public T request { get; set; }
@@ -20,31 +20,34 @@ namespace Amber.Kit.HttpPcap.Common
         }
         private delegate void ServerEventHandler(object sender, ServerEventArgs args);
         private event ServerEventHandler ServerEvent;
-        private ConcurrentQueue<T> requestQueue { get; set; }
-        public SingleListServer() : this(new ConcurrentQueue<T>() , new AutoResetEvent(false))
+        private Queue<T> requestQueue { get; set; }
+        public SingleListServer() : this(new Queue<T>() , new AutoResetEvent(false))
         {
-
+            
         }
-        public SingleListServer(ConcurrentQueue<T> requestQueue , AutoResetEvent notifyEvent) : base(notifyEvent)
+        public SingleListServer(Queue<T> requestQueue , AutoResetEvent notifyEvent) : base(notifyEvent)
         {
             this.requestQueue = requestQueue;
+            queueLocker = new object();
             ServerEvent = new ServerEventHandler(this.onServerEvent);
         }
         public void postRequest(T request)
         {
-            requestQueue.Enqueue(request);
+            lock (queueLocker)
+            {
+                requestQueue.Enqueue(request);
+            }
             notify();
         }
         protected sealed override void onEventablePoll()
         {
-            while (!requestQueue.IsEmpty)
+            lock (queueLocker)
             {
-                T request;
-                bool hasMore = requestQueue.TryDequeue(out request);
-                if(hasMore)
+                while (requestQueue.Count > 0)
                 {
+                    T request = requestQueue.Dequeue();
                     ServerEventArgs arg = new ServerEventArgs(request);
-                    ServerEvent(this, arg);
+                    ServerEvent(this, arg); 
                 }
             }
         }
