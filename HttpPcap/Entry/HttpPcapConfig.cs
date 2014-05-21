@@ -37,6 +37,7 @@ namespace Amber.Kit.HttpPcap
         /// 此模式需要管理员权限. <para/>
         /// 开启此模式将使程序工作在网络层(第三层). <para/>
         /// 此模式下逻辑更为简单,且不需要安装其他的驱动程序. <para/>
+        /// 部分网卡带有自动计算校验和的功能,会导致无法在本模式下抓包,通过本地连接-属性-配置-高级-Checksum Offload里关闭发送时的自动校验,即可解决问题,但对全局网络性能有一定的影响.<para/>
         /// </remarks>
         public string pcapMode { get; set; }
 
