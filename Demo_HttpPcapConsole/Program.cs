@@ -14,9 +14,9 @@ namespace Demo_HttpPcapConsole
             Logger.enable();
 
             HttpPcapConfig config = new HttpPcapConfig();
-            config.serverPortsFilter.Add(80);
-            config.pcapIpAddress = "10.31.31.32";
-            config.remoteDomainFilter = "www.baidu.com";
+            config.serverPortsFilter.Add(8090);
+            config.pcapIpAddress = "10.148.219.209";
+            config.remoteDomainFilter = "";
             config.pcapMode = "rawsocket";
             HttpPcapEntry pcap;
             try

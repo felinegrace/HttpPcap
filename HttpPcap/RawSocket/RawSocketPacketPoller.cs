@@ -27,6 +27,7 @@ namespace Amber.Kit.HttpPcap.RawSocket
         {
             if (socket.Poll(0, SelectMode.SelectRead))
             {
+                Console.Write(".");
                 int length = socket.Receive(descriptor.des, 0, descriptor.desCapacity, SocketFlags.None);
                 descriptor.desLength = length;
                 onPacket(descriptor);
