@@ -12,11 +12,11 @@ namespace Amber.Kit.HttpPcap.HttpBusiness
         /// key by request sequence number.
         /// response ack = request sequence + length.
         /// </summary>
-        private Dictionary<uint, HttpTransaction> transactionDict { get; set; }
+        private Dictionary<uint, HttpTransactionPair> transactionDict { get; set; }
 
         public HttpTransactionMatcher()
         {
-            transactionDict = new Dictionary<uint, HttpTransaction>();
+            transactionDict = new Dictionary<uint, HttpTransactionPair>();
         }
 
         public void resetDict()
@@ -25,57 +25,61 @@ namespace Amber.Kit.HttpPcap.HttpBusiness
         }
 
 
-        public void newRequest(string rawRequestSeqNum, byte[] rawRequestCollection)
+        public void newRequest(string rawRequestSeqNum, HttpRequestParser httpRequestParser)
         {
             uint key = Convert.ToUInt32(rawRequestSeqNum);
-            key += (uint)rawRequestCollection.Length;
+            key += (uint)(httpRequestParser.httpRequest.rawStream.Count);
 
             if(transactionDict.ContainsKey(key))
             {
                 transactionDict.Remove(key);
             }
 
-            HttpTransaction transaction = new HttpTransaction();
-            transaction.rawRequest.AddRange(rawRequestCollection);
+            HttpTransactionPair httpTransactionPair = new HttpTransactionPair();
 
-            transactionDict.Add(key, transaction);
+            httpTransactionPair.httpRequestParser = httpRequestParser;
+            httpTransactionPair.httpResponseParser = null;
+            transactionDict.Add(key, httpTransactionPair);
         }
 
-        public void newResponse(string rawResponseAckNum, byte[] rawResponseCollection, 
+        public void newResponse(string rawResponseAckNum, byte[] rawResponseStream, 
             out bool responseIntegrity,
-            out byte[] requestData,
-            out byte[] responseData
+            out HttpTransactionPair httpTransactionPair
             )
         {
             responseIntegrity = false;
-            requestData = null;
-            responseData = null;
+            httpTransactionPair = null;
 
             uint key = Convert.ToUInt32(rawResponseAckNum);
 
-            HttpTransaction transaction = null;
-            bool hasMatchedRequest = transactionDict.TryGetValue(key, out transaction);
+            bool hasMatchedRequest = transactionDict.TryGetValue(key, out httpTransactionPair);
             //throw not matched response
             if ( hasMatchedRequest == false )
             {
                 return;
             }
-
-            transaction.rawResponse.AddRange(rawResponseCollection);
-
-            //to see if response ends with 0d 0a 0d 0a (\r\n\r\n)
-            if (transaction.rawResponse.ElementAt<byte>(transaction.rawResponse.Count - 4) == 0x0d &&
-                transaction.rawResponse.ElementAt<byte>(transaction.rawResponse.Count - 3) == 0x0a &&
-                transaction.rawResponse.ElementAt<byte>(transaction.rawResponse.Count - 2) == 0x0d &&
-                transaction.rawResponse.ElementAt<byte>(transaction.rawResponse.Count - 1) == 0x0a)
+            try
             {
-                responseIntegrity = true;
-                requestData = transaction.rawRequest.ToArray();
-                responseData = transaction.rawResponse.ToArray();
+                if (httpTransactionPair.httpResponseParser == null)
+                {
+                    httpTransactionPair.httpResponseParser = new HttpResponseParser(rawResponseStream);
+                }
+                else
+                {
+                    httpTransactionPair.httpResponseParser.moreChunkedStream(rawResponseStream);
+                }
+                //if all data is gethered, remove this transaction
+                responseIntegrity = httpTransactionPair.httpResponseParser.responseIntegrity;
+                if (responseIntegrity == true)
+                {
+                    transactionDict.Remove(key);
+                }
+            }
+            catch (System.Exception)
+            {
+                //throw currupted transaction
                 transactionDict.Remove(key);
             }
-
-                
         }
     }
 }

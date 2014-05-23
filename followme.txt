@@ -1,0 +1,5 @@
+HTTPS clone URL
+
+https://github.com/felinegrace/HttpPcap.git
+
+You can clone with HTTPS, SSH, or Subversion. 

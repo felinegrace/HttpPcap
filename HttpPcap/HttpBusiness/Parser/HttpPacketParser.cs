@@ -48,16 +48,5 @@ namespace Amber.Kit.HttpPcap.HttpBusiness
             }
         }
 
-        public HttpRequestHeader parsePayloadAsHttpRequest()
-        {
-            HttpRequestHeader httpRequestHeader = new HttpRequestHeader(tcpHeader.Data);
-            return httpRequestHeader;
-        }
-
-        public HttpResponseHeader parsePayloadAsHttpResponse()
-        {
-            HttpResponseHeader httpResponseHeader = new HttpResponseHeader(tcpHeader.Data);
-            return httpResponseHeader;
-        }
     }
 }

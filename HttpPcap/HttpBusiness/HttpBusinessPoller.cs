@@ -12,9 +12,9 @@ namespace Amber.Kit.HttpPcap.HttpBusiness
     {
         
         private HttpTransactionMatcher httpTransactionMatcher { get; set; }
-        public Action<byte[]> onRequest { get; set; }
-        public Action<byte[]> onResponse { get; set; }
-        public Action<byte[], byte[]> onTransaction { get; set; }
+        public Action<HttpRequest> onRequest { get; set; }
+        public Action<HttpResponse> onResponse { get; set; }
+        public Action<HttpTransaction> onTransaction { get; set; }
         private HttpPcapConfig httpPcapConfig { get; set; }
 
         public HttpBusinessPoller(HttpPcapConfig httpPcapConfig)
@@ -57,35 +57,38 @@ namespace Amber.Kit.HttpPcap.HttpBusiness
 
         private void onHttpRequest(HttpPacketParser parser)
         {
-            HttpRequestHeader httpRequestHeader = parser.parsePayloadAsHttpRequest();
+            HttpRequestParser httpRequestParser = new HttpRequestParser(parser.tcpHeader.Data);
             if (httpPcapConfig.remoteDomainFilter != "" &&
-                httpRequestHeader.host.IndexOf(httpPcapConfig.remoteDomainFilter) == -1)
+                httpRequestParser.httpRequest.host.IndexOf(httpPcapConfig.remoteDomainFilter) == -1)
                 return;
-            httpTransactionMatcher.newRequest(parser.tcpHeader.SequenceNumber, parser.tcpHeader.Data);
+
+            httpTransactionMatcher.newRequest(parser.tcpHeader.SequenceNumber, httpRequestParser);
             if (onRequest != null)
             {
-                onRequest(parser.tcpHeader.Data);
+                onRequest(httpRequestParser.httpRequest);
             }
         }
 
         private void onHttpResponse(HttpPacketParser parser)
         {
             bool responseIntegrity;
-            byte[] requestData;
-            byte[] responseData;
+            HttpTransactionPair httpTransactionPair;
             httpTransactionMatcher.newResponse(
-                parser.tcpHeader.AcknowledgementNumber, parser.tcpHeader.Data, 
-                out responseIntegrity, out requestData, out responseData);
+                parser.tcpHeader.AcknowledgementNumber, parser.tcpHeader.Data,
+                out responseIntegrity, out httpTransactionPair);
             if (responseIntegrity)
             {
                 
                 if (onResponse != null)
                 {
-                    onResponse(responseData);
+                    onResponse(httpTransactionPair.httpResponseParser.httpResponse);
                 }
                 if (onTransaction != null)
                 {
-                    onTransaction(requestData, responseData);
+                    HttpTransaction httpTransaction = new HttpTransaction();
+                    httpTransaction.httpRequest = httpTransactionPair.httpRequestParser.httpRequest;
+                    httpTransaction.httpResponse = httpTransactionPair.httpResponseParser.httpResponse;
+                    onTransaction(httpTransaction);
                 }
             }
 

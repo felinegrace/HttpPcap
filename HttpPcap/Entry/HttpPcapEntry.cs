@@ -22,7 +22,7 @@ namespace Amber.Kit.HttpPcap
         private bool alreadyStarted { get; set; }
 
         /// <summary>
-        /// onHttpPcapRequestEvent事件和onHttpPcapResponseEvent事件的通用代理.<para/>
+        /// onHttpRequestEvent事件的代理.<para/>
         /// </summary>
         /// <param name="sender">
         /// 本类的对象.
@@ -30,20 +30,16 @@ namespace Amber.Kit.HttpPcap
         /// <param name="args">
         /// 包含了回调内容的事件参数.
         /// </param>
-        public delegate void HttpPcapPacketEventHandler(object sender, HttpPacketEventArgs args);
+        public delegate void HttpRequestEventHandler(object sender, HttpRequest args);
 
         /// <summary>
         /// 如果需要监听单个的HTTP请求包,请在这里设置事件监听,就算没有对应返回的请求包也会在这里给出.<para/>
         /// </summary>
-        public event HttpPcapPacketEventHandler onHttpPcapRequestEvent = delegate { };
+        public event HttpRequestEventHandler onHttpRequestEvent = delegate { };
+
 
         /// <summary>
-        /// 如果需要监听单个的HTTP回应包,请在这里设置事件监听.<para/>
-        /// </summary>
-        public event HttpPcapPacketEventHandler onHttpPcapResponseEvent = delegate { };
-
-        /// <summary>
-        /// onHttpPcapTransactionEvent事件的代理.<para/>
+        /// onHttpResponseEvent事件的代理.<para/>
         /// </summary>
         /// <param name="sender">
         /// 本类的对象.
@@ -51,12 +47,28 @@ namespace Amber.Kit.HttpPcap
         /// <param name="args">
         /// 包含了回调内容的事件参数.
         /// </param>
-        public delegate void HttpPcapTransactionEventHandler(object sender, HttpTransactionEventArgs args);
+        public delegate void HttpResponseEventHandler(object sender, HttpResponse httpResponse);
+
+        /// <summary>
+        /// 如果需要监听单个的HTTP回应包,请在这里设置事件监听.<para/>
+        /// </summary>
+        public event HttpResponseEventHandler onHttpResponseEvent = delegate { };
+
+        /// <summary>
+        /// onHttpTransactionEvent事件的代理.<para/>
+        /// </summary>
+        /// <param name="sender">
+        /// 本类的对象.
+        /// </param>
+        /// <param name="args">
+        /// 包含了回调内容的事件参数.
+        /// </param>
+        public delegate void HttpTransactionEventHandler(object sender, HttpTransaction args);
 
         /// <summary>
         /// 如果需要监听一个包含完整请求和回应的HTTP事务,请在这里设置事件监听,不完整的事务将不会给出.<para/>
         /// </summary>
-        public event HttpPcapTransactionEventHandler onHttpPcapTransactionEvent = delegate { };
+        public event HttpTransactionEventHandler onHttpTransactionEvent = delegate { };
 
         /// <summary>
         /// onHttpPcapErrorEvent事件的代理.<para/>
@@ -67,7 +79,7 @@ namespace Amber.Kit.HttpPcap
         /// <param name="args">
         /// 包含了回调内容的事件参数.
         /// </param>
-        public delegate void HttpPcapErrorEventHandler(object sender, HttpPcapErrorEventArgs args);
+        public delegate void HttpPcapErrorEventHandler(object sender, HttpPcapError args);
 
         /// <summary>
         /// 如果需要监听所有错误,请在这里设置事件监听,一般情况下,错误将不会以异常抛出.<para/>
@@ -162,25 +174,25 @@ namespace Amber.Kit.HttpPcap
             }
         }
 
-        private void onRequest(byte[] requestContent)
+        private void onRequest(HttpRequest httpRequest)
         {
-            onHttpPcapRequestEvent(this, new HttpPacketEventArgs(requestContent));
+            onHttpRequestEvent(this, httpRequest);
         }
 
-        private void onResponse(byte[] responseContent)
+        private void onResponse(HttpResponse httpResponse)
         {
-            onHttpPcapResponseEvent(this, new HttpPacketEventArgs(responseContent));
+            onHttpResponseEvent(this, httpResponse);
         }
 
-        private void onTransaction(byte[] requestContent, byte[] responseContent)
+        private void onTransaction(HttpTransaction httpTransaction)
         {
-            onHttpPcapTransactionEvent(this, new HttpTransactionEventArgs(requestContent, responseContent));
+            onHttpTransactionEvent(this, httpTransaction);
         }
 
         private void onError(string message)
         {
             stop();
-            onHttpPcapErrorEvent(this, new HttpPcapErrorEventArgs(message));
+            onHttpPcapErrorEvent(this, new HttpPcapError(message));
         }
     }
 }

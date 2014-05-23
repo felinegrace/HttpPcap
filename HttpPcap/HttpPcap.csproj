@@ -54,6 +54,7 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Web" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="System.Data" />
@@ -71,15 +72,18 @@
     <Compile Include="Common\Polling\SingleListServer.cs" />
     <Compile Include="Entry\HttpPcapConfig.cs" />
     <Compile Include="Common\PcapException.cs" />
-    <Compile Include="Entry\HttpPcapEventArgs.cs" />
+    <Compile Include="HttpBusiness\HttpTransactionPair.cs" />
+    <Compile Include="HttpBusiness\Parser\HttpRequestParser.cs" />
+    <Compile Include="HttpBusiness\Parser\HttpResponseParser.cs" />
+    <Compile Include="Output\HttpPcapError.cs" />
     <Compile Include="RawSocket\RawSocketPacketPoller.cs" />
     <Compile Include="WinPcap\Headers\EthernetHeader.cs" />
     <Compile Include="WinPcap\PcapStructWrapper.cs" />
     <Compile Include="HttpBusiness\HttpBusinessPoller.cs" />
-    <Compile Include="HttpBusiness\HttpPacketParser.cs" />
-    <Compile Include="HttpBusiness\Headers\HttpRequestHeader.cs" />
-    <Compile Include="HttpBusiness\Headers\HttpResponseHeader.cs" />
-    <Compile Include="HttpBusiness\HttpTransaction.cs" />
+    <Compile Include="HttpBusiness\Parser\HttpPacketParser.cs" />
+    <Compile Include="Output\HttpRequest.cs" />
+    <Compile Include="Output\HttpResponse.cs" />
+    <Compile Include="Output\HttpTransaction.cs" />
     <Compile Include="HttpBusiness\HttpTransactionMatcher.cs" />
     <Compile Include="HttpBusiness\Headers\IPHeader.cs" />
     <Compile Include="Entry\HttpPcapEntry.cs" />

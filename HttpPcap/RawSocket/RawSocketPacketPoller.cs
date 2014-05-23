@@ -14,7 +14,6 @@ namespace Amber.Kit.HttpPcap.RawSocket
     {
         private Socket socket { get; set; }
 
-        private const int SIO_RCVALL = unchecked((int)0x98000001);
         private byte[] IN = new byte[4] { 1, 0, 0, 0 };
         private byte[] OUT = new byte[4];
         public RawSocketPacketPoller(string ipAddress, Action<Descriptor> onPacket)
@@ -27,7 +26,6 @@ namespace Amber.Kit.HttpPcap.RawSocket
         {
             if (socket.Poll(0, SelectMode.SelectRead))
             {
-                Console.Write(".");
                 int length = socket.Receive(descriptor.des, 0, descriptor.desCapacity, SocketFlags.None);
                 descriptor.desLength = length;
                 onPacket(descriptor);
@@ -44,7 +42,7 @@ namespace Amber.Kit.HttpPcap.RawSocket
             socket = new Socket(AddressFamily.InterNetwork, SocketType.Raw, ProtocolType.IP);
             socket.Bind(new IPEndPoint(IPAddress.Parse(ipAddress), 0));
             socket.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.HeaderIncluded, true);
-            socket.IOControl(SIO_RCVALL, IN, OUT);
+            socket.IOControl(IOControlCode.ReceiveAll, IN, OUT);
         }
 
         protected override void onStop()
