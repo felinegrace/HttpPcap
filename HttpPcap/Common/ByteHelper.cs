@@ -31,6 +31,10 @@ namespace Amber.Kit.HttpPcap.Common
             int sourceCount = source.Count<byte>();
             int patternCount = pattern.Length;
             int sourceStartAt = sourceCount - pattern.Length;
+            if (sourceStartAt < 0)
+            {
+                return false;
+            }
             for(int i = 0 ; i < patternCount ; i++)
             {
                 if(source.ElementAt<byte>(sourceStartAt + i) != pattern[i])

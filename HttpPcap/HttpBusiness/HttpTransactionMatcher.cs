@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-
+using Amber.Kit.HttpPcap.Common;
 namespace Amber.Kit.HttpPcap.HttpBusiness
 {
     class HttpTransactionMatcher
@@ -25,10 +25,10 @@ namespace Amber.Kit.HttpPcap.HttpBusiness
         }
 
 
-        public void newRequest(string rawRequestSeqNum, HttpRequestParser httpRequestParser)
+        public void newRequest(string rawRequestSeqNum, int rawRequestLength, HttpRequestParser httpRequestParser)
         {
             uint key = Convert.ToUInt32(rawRequestSeqNum);
-            key += (uint)(httpRequestParser.httpRequest.rawStream.Count);
+            key += (uint)rawRequestLength;
 
             if(transactionDict.ContainsKey(key))
             {
@@ -66,7 +66,7 @@ namespace Amber.Kit.HttpPcap.HttpBusiness
                 }
                 else
                 {
-                    httpTransactionPair.httpResponseParser.moreChunkedStream(rawResponseStream);
+                    httpTransactionPair.httpResponseParser.moreStream(rawResponseStream);
                 }
                 //if all data is gethered, remove this transaction
                 responseIntegrity = httpTransactionPair.httpResponseParser.responseIntegrity;

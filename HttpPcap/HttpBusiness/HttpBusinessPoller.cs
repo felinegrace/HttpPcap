@@ -62,7 +62,7 @@ namespace Amber.Kit.HttpPcap.HttpBusiness
                 httpRequestParser.httpRequest.host.IndexOf(httpPcapConfig.remoteDomainFilter) == -1)
                 return;
 
-            httpTransactionMatcher.newRequest(parser.tcpHeader.SequenceNumber, httpRequestParser);
+            httpTransactionMatcher.newRequest(parser.tcpHeader.SequenceNumber, parser.tcpHeader.Data.Length, httpRequestParser);
             if (onRequest != null)
             {
                 onRequest(httpRequestParser.httpRequest);
@@ -78,7 +78,6 @@ namespace Amber.Kit.HttpPcap.HttpBusiness
                 out responseIntegrity, out httpTransactionPair);
             if (responseIntegrity)
             {
-                
                 if (onResponse != null)
                 {
                     onResponse(httpTransactionPair.httpResponseParser.httpResponse);
@@ -91,7 +90,6 @@ namespace Amber.Kit.HttpPcap.HttpBusiness
                     onTransaction(httpTransaction);
                 }
             }
-
         }
 
         protected override void onStart()

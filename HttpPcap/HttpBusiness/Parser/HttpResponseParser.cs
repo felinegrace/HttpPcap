@@ -17,49 +17,52 @@ namespace Amber.Kit.HttpPcap.HttpBusiness
 
         private readonly byte[] bsrbsn = { (byte)'\r', (byte)'\n' };
         private readonly byte[] bsrbsnbsrbsn = { (byte)'\r', (byte)'\n', (byte)'\r', (byte)'\n' };
-
-        private void storeResponseHeaderAndChunkedData(byte[] rawStream)
+        private readonly byte[] zerobsrbsnbsrbsn = { (byte)'0', (byte)'\r', (byte)'\n', (byte)'\r', (byte)'\n' };
+        private int exceptedEntityLength { get; set; }
+        private int receivedEntityLength { get; set; }
+        private void storeResponseHeaderAndEntity(byte[] rawStream)
         {
-
             int headerEnds = BytesHelper.indexOf(rawStream, 0, rawStream.Length, bsrbsnbsrbsn).First();
-            httpResponse.rawHeaderStream.AddRange(rawStream.Take(headerEnds));
-            int chunkedIndex = headerEnds + bsrbsnbsrbsn.Length;
-            int chunkedLength = rawStream.Length - chunkedIndex;
-            if (chunkedLength > 0)
+            httpResponse.rawHeader = System.Text.Encoding.ASCII.GetString(rawStream.Take(headerEnds).ToArray());
+            int entityIndex = headerEnds + bsrbsnbsrbsn.Length;
+            this.receivedEntityLength = rawStream.Length - entityIndex;
+            if (this.receivedEntityLength > 0)
             {
-                IEnumerable<byte> rawChunkedStream = rawStream.Skip(chunkedIndex).Take(chunkedLength);
-                httpResponse.rawChunkedStream.AddRange(rawChunkedStream);
-                parseChunkedStream(rawChunkedStream);
+                IEnumerable<byte> rawEntityStream = rawStream.Skip(entityIndex).Take(this.receivedEntityLength);
+                httpResponse.rawEntity.AddRange(rawEntityStream);
             }
         }
 
-        private void parseChunkedStream(IEnumerable<byte> rawChunkedStream)
+        private void parseChunkedEntity(IEnumerable<byte> rawChunkedEntity)
         {
             int currentPosition = 0;
-            int rawChunkedStreamLength = rawChunkedStream.Count();
+            int rawChunkedStreamLength = rawChunkedEntity.Count();
             int dataNotDigestedCount = rawChunkedStreamLength - currentPosition;
             while (dataNotDigestedCount > 0)
             {
-                int chunkLengthEnds = BytesHelper.indexOf(rawChunkedStream, currentPosition, dataNotDigestedCount, bsrbsn).FirstOrDefault();
+                int chunkLengthEnds = BytesHelper.indexOf(rawChunkedEntity, currentPosition, dataNotDigestedCount, bsrbsn).FirstOrDefault();
                 if(chunkLengthEnds == 0)
                 {
                 	//this is not valid chunk data
                     throw new PcapException("this is not valid chunk data");
                 }
-                byte[] chunkLengthBytes = rawChunkedStream.Skip(currentPosition).Take(chunkLengthEnds - currentPosition).ToArray();
+                byte[] chunkLengthBytes = rawChunkedEntity.Skip(currentPosition).Take(chunkLengthEnds - currentPosition).ToArray();
                 string chunkLengthString = System.Text.Encoding.ASCII.GetString(chunkLengthBytes);
                 int chunkLength = Convert.ToInt32(chunkLengthString, 16);
                 //find length = 0 terminates chunk
                 if (chunkLength == 0)
                 {
-                    decodeChunkedStream();
+                    if(httpResponse.isTextEntityBody)
+                    {
+                        decodeEntityAsText(httpResponse.rawChunkedEntity);
+                    }
                     return;
                 }
                 //or append more chunk
                 else
                 {
                     currentPosition = chunkLengthEnds + bsrbsn.Length;
-                    httpResponse.rawChunkedEntityBody.AddRange(rawChunkedStream.Skip(currentPosition).Take(chunkLength));
+                    httpResponse.rawChunkedEntity.AddRange(rawChunkedEntity.Skip(currentPosition).Take(chunkLength));
                     currentPosition += chunkLength + bsrbsn.Length;
                 }
                 dataNotDigestedCount = rawChunkedStreamLength - currentPosition;
@@ -67,31 +70,35 @@ namespace Amber.Kit.HttpPcap.HttpBusiness
 
 
         }
-        private void decodeChunkedStream()
+        private void decodeEntityAsText(List<byte> rawEntity)
         {
-            Stream decodedChunkedEntityBody = null;
-            Stream rawChunkedEntityBody = new System.IO.MemoryStream(httpResponse.rawChunkedEntityBody.ToArray());
+            Stream decodedChunkedEntity = null;
+            Stream rawChunkedEntity = new System.IO.MemoryStream(rawEntity.ToArray());
             if (httpResponse.contentEncoding.Equals("gzip"))
             {
-                decodedChunkedEntityBody = new GZipStream(rawChunkedEntityBody, CompressionMode.Decompress);
+                decodedChunkedEntity = new GZipStream(rawChunkedEntity, CompressionMode.Decompress);
             }
             else if (httpResponse.contentEncoding.Equals("deflate"))
             {
-                decodedChunkedEntityBody = new DeflateStream(rawChunkedEntityBody, CompressionMode.Decompress);
+                decodedChunkedEntity = new DeflateStream(rawChunkedEntity, CompressionMode.Decompress);
+            }
+            else
+            {
+                decodedChunkedEntity = rawChunkedEntity;
             }
             Encoding encoding = Encoding.GetEncoding(httpResponse.charset.Equals("") ? "utf-8" : httpResponse.charset);
-            if (decodedChunkedEntityBody != null)
+            if (decodedChunkedEntity != null)
             {
-                httpResponse.chunkedEntityBody = new StreamReader(decodedChunkedEntityBody, encoding).ReadToEnd();
+                httpResponse.textEntity = new StreamReader(decodedChunkedEntity, encoding).ReadToEnd();
             }
         }
-        
-        private void parseFirstLine(string rawStream)
+
+        private void parseFirstLine(string header)
         {
-            int firstLineEndIndex = rawStream.IndexOf("\r\n");
+            int firstLineEndIndex = header.IndexOf("\r\n");
             if (firstLineEndIndex > 0)
             {
-                string firstLine = rawStream.Substring(0, firstLineEndIndex);
+                string firstLine = header.Substring(0, firstLineEndIndex);
                 string[] splitFirstLineBySpace = firstLine.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
                 if (splitFirstLineBySpace.Length >= 2)
                 {
@@ -99,25 +106,44 @@ namespace Amber.Kit.HttpPcap.HttpBusiness
                 }
             }
         }
-        private void parseTransferEncoding(string rawStream)
+        private void parseTransferEncoding(string header)
         {
             Regex regex = new Regex(@"\bTransfer-Encoding:.(\S*)", RegexOptions.IgnoreCase);
-            Match match = regex.Match(rawStream);
+            Match match = regex.Match(header);
             httpResponse.transferEncoding = match.Groups[1].Value;
         }
 
-        private void parseContentEncoding(string rawStream)
+        private void parseContentEncoding(string header)
         {
             Regex regex = new Regex(@"\bContent-Encoding:.(\S*)", RegexOptions.IgnoreCase);
-            Match match = regex.Match(rawStream);
+            Match match = regex.Match(header);
             httpResponse.contentEncoding = match.Groups[1].Value;
         }
 
-        private void parseCharset(string rawStream)
+        private void parseContentType(string header)
         {
-            Regex regex = new Regex("charset=([\\w|-]+)", RegexOptions.IgnoreCase);
-            Match match = regex.Match(rawStream);
-            httpResponse.charset = match.Groups[1].Value;
+            Regex contentTypeRegex = new Regex(@"\bContent-Type:.(\S*)", RegexOptions.IgnoreCase);
+            Match contentTypeMatch = contentTypeRegex.Match(header);
+            string contentType = contentTypeMatch.Groups[1].Value;
+
+            httpResponse.isTextEntityBody = contentType.Contains("text") ||
+                contentType.Contains("javascript") ||
+                contentType.Contains("json");
+
+            Regex charsetRegex = new Regex(@"charset=(\S*)", RegexOptions.IgnoreCase);
+            Match charserMatch = charsetRegex.Match(header);
+            httpResponse.charset = charserMatch.Groups[1].Value;
+        }
+
+        private void parseContentLength(string header)
+        {
+            Regex regex = new Regex(@"\bContent-Length:.(\S*)", RegexOptions.IgnoreCase);
+            Match match = regex.Match(header);
+            if(match.Groups.Count > 1)
+            {
+                string contentLengthString = match.Groups[1].Value;
+                this.exceptedEntityLength = Convert.ToInt32(contentLengthString);
+            }
         }
 
         public HttpResponseParser(byte[] rawStream)
@@ -125,26 +151,50 @@ namespace Amber.Kit.HttpPcap.HttpBusiness
             httpResponse = new HttpResponse();
             responseIntegrity = false;
 
-            storeResponseHeaderAndChunkedData(rawStream);
+            storeResponseHeaderAndEntity(rawStream);
 
-            string unicodeRequest = System.Text.Encoding.ASCII.GetString(httpResponse.rawHeaderStream.ToArray());
-            parseFirstLine(unicodeRequest);
-            parseTransferEncoding(unicodeRequest);
-            parseContentEncoding(unicodeRequest);
-            parseCharset(unicodeRequest);
-            if( ! httpResponse.transferEncoding.Equals("chunked"))
-            {
-                responseIntegrity = true;
-            }
+            parseFirstLine(httpResponse.rawHeader);
+            parseTransferEncoding(httpResponse.rawHeader);
+            parseContentEncoding(httpResponse.rawHeader);
+            parseContentType(httpResponse.rawHeader);
+            parseContentLength(httpResponse.rawHeader);
+            checkResponseIntegrity();
         }
 
-        public void moreChunkedStream(byte[] rawChunkedStream)
+        public void moreStream(byte[] rawStream)
         {
-            httpResponse.rawChunkedStream.AddRange(rawChunkedStream);
-            if (BytesHelper.isEndWith(rawChunkedStream, bsrbsnbsrbsn))
+            httpResponse.rawEntity.AddRange(rawStream);
+            receivedEntityLength += rawStream.Length;
+            checkResponseIntegrity();
+        }
+
+        private void checkResponseIntegrity()
+        {
+            //check chunked response ending
+            if (httpResponse.transferEncoding.Equals("chunked"))
             {
-                parseChunkedStream(httpResponse.rawChunkedStream);
-                responseIntegrity = true;
+                if (BytesHelper.isEndWith(httpResponse.rawEntity, zerobsrbsnbsrbsn))
+                {
+                    parseChunkedEntity(httpResponse.rawEntity);
+                    responseIntegrity = true;
+                }
+            }
+            //check response not chunked, if content is up to length
+            else if (exceptedEntityLength > 0)
+            {
+                if (receivedEntityLength >= exceptedEntityLength)
+                {
+                    if (httpResponse.isTextEntityBody)
+                    {
+                        decodeEntityAsText(httpResponse.rawEntity);
+                    }
+                    responseIntegrity = true;
+                }
+            }
+            //wtf unsopported!
+            else
+            {
+                throw new PcapException("error parsing packet.");
             }
         }
     }

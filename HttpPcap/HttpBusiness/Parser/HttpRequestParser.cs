@@ -10,12 +10,12 @@ namespace Amber.Kit.HttpPcap.HttpBusiness
     class HttpRequestParser
     {
         public HttpRequest httpRequest { get; private set; }
-        private void parseFirstLine(string rawStream)
+        private void parseFirstLine(string header)
         {
-            int firstReturnIndex = rawStream.IndexOf("\r\n");
+            int firstReturnIndex = header.IndexOf("\r\n");
             if (firstReturnIndex > 0)
             {
-                string firstLine = rawStream.Substring(0, firstReturnIndex);
+                string firstLine = header.Substring(0, firstReturnIndex);
                 int firstSpace = firstLine.IndexOf(" ");
                 if (firstSpace > 0)
                 {
@@ -32,20 +32,19 @@ namespace Amber.Kit.HttpPcap.HttpBusiness
                 }
             }
         }
-        private void parseHost(string rawStream)
+        private void parseHost(string header)
         {
             Regex regex = new Regex(@"\bHost:.(\S*)", RegexOptions.IgnoreCase);
-            Match match = regex.Match(rawStream);
+            Match match = regex.Match(header);
             httpRequest.host = match.Groups[1].Value;
         }
 
         public HttpRequestParser(byte[] rawStream)
         {
             httpRequest = new HttpRequest();
-            httpRequest.rawStream.AddRange(rawStream);
-            string unicodeRequest = System.Text.Encoding.ASCII.GetString(rawStream.ToArray());
-            parseFirstLine(unicodeRequest);
-            parseHost(unicodeRequest);
+            httpRequest.rawHeader = System.Text.Encoding.ASCII.GetString(rawStream.ToArray());
+            parseFirstLine(httpRequest.rawHeader);
+            parseHost(httpRequest.rawHeader);
         }
     }
 }

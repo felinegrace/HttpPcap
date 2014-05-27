@@ -47,7 +47,7 @@ namespace Amber.Kit.HttpPcap
         /// <param name="args">
         /// 包含了回调内容的事件参数.
         /// </param>
-        public delegate void HttpResponseEventHandler(object sender, HttpResponse httpResponse);
+        public delegate void HttpResponseEventHandler(object sender, HttpResponse args);
 
         /// <summary>
         /// 如果需要监听单个的HTTP回应包,请在这里设置事件监听.<para/>

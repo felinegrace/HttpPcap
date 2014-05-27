@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using Newtonsoft.Json;
 
-namespace Cabinet.Utility
+namespace Demo_HttpPcapConsole
 {
     public class Logger
     {

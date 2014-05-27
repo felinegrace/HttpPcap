@@ -10,7 +10,13 @@ namespace Amber.Kit.HttpPcap
     /// </summary>
     public class HttpTransaction : EventArgs
     {
+        /// <summary>
+        /// 此HTTP事务对应的请求.
+        /// </summary>
         public HttpRequest httpRequest { get; set; }
+        /// <summary>
+        /// 此HTTP事务对应的回应.
+        /// </summary>
         public HttpResponse httpResponse { get; set; }
 
         internal HttpTransaction()

@@ -2,10 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Amber.Kit.HttpPcap;
-using Cabinet.Utility;
-using Amber.Kit.HttpPcap.Common;
 using System.Web;
+using Amber.Kit.HttpPcap;
+
+//Logger就是简单打印
+
 namespace Demo_HttpPcapConsole
 {
     class Program
@@ -23,9 +24,8 @@ namespace Demo_HttpPcapConsole
             try
             {
                 pcap = new HttpPcapEntry(config);
-
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Logger.error("\n~~~config err = {0}", ex.Message);
                 Console.WriteLine("press any key to quit.");
@@ -56,23 +56,29 @@ namespace Demo_HttpPcapConsole
 
         private static void onReq(object sender, HttpRequest args)
         {
-            Logger.debug("\n^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n" +
-                "uri = \n{0}\nraw = \n{1}\n" +
-                "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n", 
-                args.uri, System.Text.Encoding.UTF8.GetString(args.rawStream.ToArray()));
+            Logger.debug("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^");
+            Logger.debug("request uri = {0}", args.uri);
+            Logger.debug("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^");
         }
 
-        //回应包因为有加密的情况,演示程序只打印其中一部分.
         private static void onResp(object sender, HttpResponse args)
         {
-            //Logger.debug("\n^^^part of rsp = {0}", System.Text.Encoding.UTF8.GetString(args.rawStream.ToArray()));
+            Logger.debug("______________________________________________________________");
+            Logger.debug("response code = {0}", args.statusCode);
+            if (args.isTextEntityBody)
+                Logger.debug("response text entity = {0}", args.textEntity);
+            Logger.debug("______________________________________________________________");
+
         }
 
         private static void onTrans(object sender, HttpTransaction args)
         {
-            //Logger.debug("\n>>>req = {0}", System.Text.Encoding.UTF8.GetString(args.httpResponse.rawStream.ToArray()));
-            //int partLength = args.httpResponse.rawStream.Count > 128 ? 128 : args.httpResponse.rawStream.Count;
-            //Logger.debug("\n>>>part of rsp = {0}", System.Text.Encoding.UTF8.GetString(args.httpResponse.rawStream.ToArray(), 0, partLength));
+            Logger.debug("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&");
+            Logger.debug("request uri = {0}", args.httpRequest.uri);
+            Logger.debug("response code = {0}", args.httpResponse.statusCode);
+            if (args.httpResponse.isTextEntityBody)
+                Logger.debug("response text entity = {0}", args.httpResponse.textEntity);
+            Logger.debug("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&");
         }
 
         private static void onErr(object sender, HttpPcapError args)
