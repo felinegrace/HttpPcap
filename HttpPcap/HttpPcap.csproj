@@ -66,8 +66,11 @@
     <Compile Include="Common\Descriptor\DescriptorBuffer.cs" />
     <Compile Include="Common\Descriptor\DescriptorDelegator.cs" />
     <Compile Include="Common\Descriptor\DescriptorException.cs" />
+    <Compile Include="Common\PacketCaptureBase.cs" />
     <Compile Include="Common\PacketPollerBase.cs" />
+    <Compile Include="Common\Polling\AsyncObjectBase.cs" />
     <Compile Include="Common\Polling\EventablePollingThread.cs" />
+    <Compile Include="Common\Polling\ExecutableObjectBase.cs" />
     <Compile Include="Common\Polling\PollingThread.cs" />
     <Compile Include="Common\Polling\SingleListServer.cs" />
     <Compile Include="Entry\HttpPcapConfig.cs" />
@@ -76,6 +79,8 @@
     <Compile Include="HttpBusiness\Parser\HttpRequestParser.cs" />
     <Compile Include="HttpBusiness\Parser\HttpResponseParser.cs" />
     <Compile Include="Output\HttpPcapError.cs" />
+    <Compile Include="RawSocket\IocpActionBase.cs" />
+    <Compile Include="RawSocket\IocpReceiveAction.cs" />
     <Compile Include="RawSocket\RawSocketPacketPoller.cs" />
     <Compile Include="WinPcap\Headers\EthernetHeader.cs" />
     <Compile Include="WinPcap\PcapStructWrapper.cs" />

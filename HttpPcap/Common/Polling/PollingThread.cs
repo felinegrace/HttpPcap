@@ -6,33 +6,22 @@ using System.Threading;
 
 namespace Amber.Kit.HttpPcap.Common
 {
-    abstract class PollingThread
+    abstract class PollingThread : AsyncObjectBase
     {
-        private Thread thread { get; set; }
+        
         private AutoResetEvent terminalEvent { get; set; }
-        public Action<string> onError { get; set; }
+        
         public PollingThread()
         {
             terminalEvent = new AutoResetEvent(false);
         }
 
-        static void invoke(object poller)
-        {
-            PollingThread transPoller = poller as PollingThread;
-            transPoller.polling();
-        }
-
-        public virtual void start()
-        {
-            thread = new Thread(invoke);
-            thread.Start(this);
-        }
-
-        public virtual void stop()
+        public override void stop()
         {
             terminalEvent.Set();
         }
-        private void polling()
+
+        protected override void run()
         {
             try
             {

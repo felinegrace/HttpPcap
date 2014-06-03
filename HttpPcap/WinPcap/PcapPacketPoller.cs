@@ -10,9 +10,10 @@ namespace Amber.Kit.HttpPcap.WinPcap
 {
     class PcapPacketPoller : PacketPollerBase
     {
+
         private IntPtr pcapHandle { get; set; }
 
-        private const int waitTimeOut = -1;
+        private const int waitTimeOut = 1000;
         private const int PCAP_OPENFLAG_PROMISCUOUS = 1;
         private const int PCAP_OPENFLAG_DATATX_UDP = 2;
         private const int PCAP_OPENFLAG_NOCAPTURE_RPCAP = 4;
@@ -71,8 +72,8 @@ namespace Amber.Kit.HttpPcap.WinPcap
         }
 
         protected override void onPolling()
-        {            
-            bool result = nextPacket();
+        {
+ 	        bool result = nextPacket();
             if (result == true)
             {
                 if (onPacket != null)
@@ -82,7 +83,7 @@ namespace Amber.Kit.HttpPcap.WinPcap
             }
         }
 
-        protected override void onStart()
+        protected sealed override void onStart()
         {
 
             PcapNetworkInterfacePool pcapNetworkInterfacePool = new PcapNetworkInterfacePool();
@@ -115,7 +116,7 @@ namespace Amber.Kit.HttpPcap.WinPcap
             
         }
 
-        protected override void onStop()
+        protected sealed override void onStop()
         {
             if (PcapApiWrapper.isNotNullPtr(pcapHandle))
             {

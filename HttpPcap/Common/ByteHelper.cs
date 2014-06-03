@@ -18,12 +18,26 @@ namespace Amber.Kit.HttpPcap.Common
 
         public static IEnumerable<int> indexOf(IEnumerable<byte> source, int start, int count, byte[] pattern)
         {
-            IEnumerable<int> index = Enumerable.Range(start, count - pattern.Length + 1);
-            for (int i = 0; i < pattern.Length; i++)
+            for (int i = start; i < start + count; i++)
             {
-                index = index.Where(n => source.ElementAt(n + i) == pattern[i]).ToArray();
+                int j = 0;
+                for (; j < pattern.Length; j++)
+                {
+                    if (source.ElementAt<byte>(i + j) != pattern[j])
+                    {
+                        break;
+                    }
+                    else
+                    {
+                        int a = 1;
+                    }
+                }
+                if (j == pattern.Length)
+                {
+                    yield return i;
+                    i += j - 1;
+                }
             }
-            return index;
         }
 
         public static bool isEndWith(IEnumerable<byte> source, byte[] pattern)

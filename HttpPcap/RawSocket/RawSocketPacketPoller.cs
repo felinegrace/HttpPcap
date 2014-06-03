@@ -10,47 +10,46 @@ using Amber.Kit.HttpPcap.Common;
 
 namespace Amber.Kit.HttpPcap.RawSocket
 {
-    class RawSocketPacketPoller : PacketPollerBase
+    class RawSocketPacketPoller : PacketCaptureBase
     {
         private Socket socket { get; set; }
 
         private byte[] IN = new byte[4] { 1, 0, 0, 0 };
         private byte[] OUT = new byte[4];
+
+        private IocpReceiveAction iocpReceiveAction { get; set; }
         public RawSocketPacketPoller(string ipAddress, Action<Descriptor> onPacket)
             : base(ipAddress, onPacket)
         {
             socket = null;
             descriptor = DescriptorBuffer.create(maxiumBytesStoredOfEachPacket);
-        }
-        protected override void onPolling()
-        {
-            if (socket.Poll(0, SelectMode.SelectRead))
-            {
-                int length = socket.Receive(descriptor.des, 0, descriptor.desCapacity, SocketFlags.None);
-                descriptor.desLength = length;
-                onPacket(descriptor);
-            }
-            
+            iocpReceiveAction = new IocpReceiveAction(onPacket);
         }
 
-        protected override void onStart()
+        public override void stop()
         {
-            if (ipAddress == null)
+            if (socket != null)
             {
-                throw new PcapException("cannot find network interface.");
-            }
-            socket = new Socket(AddressFamily.InterNetwork, SocketType.Raw, ProtocolType.IP);
-            socket.Bind(new IPEndPoint(IPAddress.Parse(ipAddress), 0));
-            socket.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.HeaderIncluded, true);
-            socket.IOControl(IOControlCode.ReceiveAll, IN, OUT);
-        }
-
-        protected override void onStop()
-        {
-            if(socket != null)
-            {
+                iocpReceiveAction.detachSocket();
                 socket.Close();
                 socket = null;
+            }
+        }
+
+        protected override void run()
+        {
+            if (socket == null)
+            {
+                if (ipAddress == null)
+                {
+                    throw new PcapException("cannot find network interface.");
+                }
+                socket = new Socket(AddressFamily.InterNetwork, SocketType.Raw, ProtocolType.IP);
+                socket.Bind(new IPEndPoint(IPAddress.Parse(ipAddress), 0));
+                socket.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.HeaderIncluded, true);
+                socket.IOControl(IOControlCode.ReceiveAll, IN, OUT);
+                iocpReceiveAction.attachSocket(socket);
+                iocpReceiveAction.recv();
             }
         }
     }

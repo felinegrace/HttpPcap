@@ -17,7 +17,7 @@ namespace Amber.Kit.HttpPcap
     {
         private HttpPcapConfig httpPcapConfig { get; set; }
         private HttpBusinessPoller httpBusinessPoller { get; set; }
-        private PacketPollerBase packetPoller { get; set; }
+        private AsyncObjectBase packetPoller { get; set; }
         private RawSocketPacketPoller rawSocketPoller { get; set; }
         private bool alreadyStarted { get; set; }
 
@@ -161,6 +161,8 @@ namespace Amber.Kit.HttpPcap
 
         private void onPacket(Descriptor descriptor)
         {
+            // null as rawsocket close
+            if (descriptor == null) return;
             if (descriptor.des[9] != 0x06) return;
             int srcport = BytesHelper.bytes2ushort(descriptor.des, 20, true);
             int desport = BytesHelper.bytes2ushort(descriptor.des, 22, true);

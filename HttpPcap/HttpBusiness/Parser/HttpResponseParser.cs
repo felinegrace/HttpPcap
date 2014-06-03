@@ -16,19 +16,52 @@ namespace Amber.Kit.HttpPcap.HttpBusiness
         public bool responseIntegrity { get; private set; }
 
         private readonly byte[] bsrbsn = { (byte)'\r', (byte)'\n' };
+        private readonly string bsrbsnString = "\r\n";
         private readonly byte[] bsrbsnbsrbsn = { (byte)'\r', (byte)'\n', (byte)'\r', (byte)'\n' };
         private readonly byte[] zerobsrbsnbsrbsn = { (byte)'0', (byte)'\r', (byte)'\n', (byte)'\r', (byte)'\n' };
         private int exceptedEntityLength { get; set; }
         private int receivedEntityLength { get; set; }
         private void storeResponseHeaderAndEntity(byte[] rawStream)
         {
-            int headerEnds = BytesHelper.indexOf(rawStream, 0, rawStream.Length, bsrbsnbsrbsn).First();
-            httpResponse.rawHeader = System.Text.Encoding.ASCII.GetString(rawStream.Take(headerEnds).ToArray());
-            int entityIndex = headerEnds + bsrbsnbsrbsn.Length;
-            this.receivedEntityLength = rawStream.Length - entityIndex;
+            bool isHeaderEnded = false;
+            int currentPosition = 0;
+            IEnumerable<int> lineEnds = BytesHelper.indexOf(rawStream, currentPosition, rawStream.Length, bsrbsn);
+
+            foreach (int nextLineEnds in lineEnds)
+            {
+                if(isHeaderEnded)
+                {
+                    break;
+                }
+                if (nextLineEnds == currentPosition)
+                {
+                    isHeaderEnded = true;
+                }
+                else
+                {
+                    int nextLineByteCount = nextLineEnds - currentPosition;
+                    string nextLine = System.Text.Encoding.ASCII.GetString(rawStream.Skip(currentPosition).Take(nextLineByteCount).ToArray());
+                    if (nextLine.Trim().Equals(string.Empty))
+                    {
+                        isHeaderEnded = true;
+                    }
+                    else
+                    {
+                        httpResponse.rawHeader += nextLine + bsrbsnString;
+                    }
+                    currentPosition += nextLineByteCount;
+                }
+                currentPosition += bsrbsn.Length;
+            }
+            if(isHeaderEnded == false)
+            {
+                throw new PcapException("corrupted header.");
+            }
+            
+            this.receivedEntityLength = rawStream.Length - currentPosition;
             if (this.receivedEntityLength > 0)
             {
-                IEnumerable<byte> rawEntityStream = rawStream.Skip(entityIndex).Take(this.receivedEntityLength);
+                IEnumerable<byte> rawEntityStream = rawStream.Skip(currentPosition).Take(this.receivedEntityLength);
                 httpResponse.rawEntity.AddRange(rawEntityStream);
             }
         }
@@ -191,10 +224,11 @@ namespace Amber.Kit.HttpPcap.HttpBusiness
                     responseIntegrity = true;
                 }
             }
-            //wtf unsopported!
-            else
+            //wtf
+            //its nothing
+            else if (exceptedEntityLength == 0)
             {
-                throw new PcapException("error parsing packet.");
+                responseIntegrity = true;
             }
         }
     }
